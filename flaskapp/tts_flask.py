@@ -42,84 +42,349 @@ HTML = """
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Japanese Text to Audio Generator</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 1000px;
-      margin: 40px auto;
-      padding: 0 20px;
-      line-height: 1.5;
-      background: #f7f7f8;
-      color: #222;
+    :root {
+      --bg: #f5f7fa;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --text: #1f2937;
+      --muted: #5b6472;
+      --border: #dbe2ea;
+      --accent: #111827;
+      --accent-hover: #0b1220;
+      --success-bg: #e8f7ee;
+      --success-text: #166534;
+      --error-bg: #feeceb;
+      --error-text: #991b1b;
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+      --max-width: 1120px;
     }
-    .card {
-      background: white;
-      border-radius: 14px;
-      padding: 24px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-      margin-bottom: 20px;
-    }
-    h1, h2 { margin-top: 0; }
-    textarea, select, input[type="text"], input[type="number"] {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+
+    * {
       box-sizing: border-box;
-      margin-top: 6px;
-      margin-bottom: 14px;
-      font-size: 14px;
     }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 10px;
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #f8fafc 0%, #f3f6f9 100%);
+      color: var(--text);
+      line-height: 1.6;
     }
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
+
+    .page {
+      width: min(var(--max-width), calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
     }
-    .speaker-box {
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      padding: 16px;
-      margin-bottom: 14px;
-      background: #fafafa;
+
+    .hero {
+      background: var(--surface);
+      border: 1px solid rgba(219, 226, 234, 0.85);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 32px;
+      margin-bottom: 22px;
     }
-    button {
-      background: #111827;
-      color: white;
-      border: none;
-      padding: 12px 18px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 15px;
-    }
-    button:hover { opacity: 0.95; }
-    .hint {
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface-alt);
+      color: var(--muted);
       font-size: 13px;
-      color: #555;
-      margin-top: -8px;
-      margin-bottom: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
     }
+
+    .hero h1 {
+      margin: 16px 0 12px;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.9fr) minmax(300px, 0.95fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid rgba(219, 226, 234, 0.85);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 26px;
+    }
+
+    .card + .card {
+      margin-top: 18px;
+    }
+
+    .card h2 {
+      margin: 0 0 6px;
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+    }
+
+    .section-copy {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
     .flash {
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 12px;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 18px;
+      font-size: 0.96rem;
+      border: 1px solid transparent;
     }
-    .flash.error { background: #fee2e2; color: #991b1b; }
-    .flash.success { background: #dcfce7; color: #166534; }
+
+    .flash.error {
+      background: var(--error-bg);
+      color: var(--error-text);
+      border-color: #f7c7c2;
+    }
+
+    .flash.success {
+      background: var(--success-bg);
+      color: var(--success-text);
+      border-color: #b7e2c5;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: #fff;
+      color: var(--text);
+      padding: 13px 14px;
+      font-size: 15px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      appearance: none;
+    }
+
+    textarea {
+      min-height: 230px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #9aa7b8;
+      box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.14);
+    }
+
+    .hint,
+    .helper {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 8px;
+    }
+
+    .helper {
+      margin-bottom: 0;
+    }
+
+    .speaker-picker {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .speaker-picker button {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: var(--surface-alt);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 12px 14px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .speaker-picker button.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .speaker-box {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+
+    .speaker-box h3 {
+      margin: 0 0 12px;
+      font-size: 1rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .primary-btn {
+      appearance: none;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 14px;
+      padding: 14px 20px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.2s ease;
+      min-width: 190px;
+    }
+
+    .primary-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .subtle-note {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .sidebar-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .sidebar-list li {
+      padding: 14px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface-alt);
+      color: var(--text);
+    }
+
+    .sidebar-list strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.95rem;
+    }
+
     code {
-      background: #f1f5f9;
-      padding: 2px 6px;
-      border-radius: 6px;
+      background: #eef2f7;
+      color: #162033;
+      padding: 2px 7px;
+      border-radius: 8px;
+      font-size: 0.9em;
+    }
+
+    .mobile-only {
+      display: none;
+    }
+
+    @media (max-width: 960px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        order: 2;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .page {
+        width: min(100% - 20px, var(--max-width));
+        padding-top: 16px;
+      }
+
+      .hero,
+      .card {
+        padding: 20px;
+        border-radius: 22px;
+      }
+
+      .field-grid,
+      .speaker-picker {
+        grid-template-columns: 1fr;
+      }
+
+      .speaker-picker button {
+        padding: 13px 16px;
+      }
+
+      .actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .primary-btn {
+        width: 100%;
+      }
+
+      textarea {
+        min-height: 180px;
+      }
     }
   </style>
   <script>
+    function setSpeakerCount(value) {
+      document.getElementById('speaker_count').value = value;
+      document.querySelectorAll('.speaker-picker button').forEach((button) => {
+        button.classList.toggle('active', parseInt(button.dataset.value, 10) === value);
+      });
+      toggleMode();
+    }
+
     function toggleMode() {
       const speakerCount = parseInt(document.getElementById('speaker_count').value, 10);
       const multiSection = document.getElementById('multi-speaker-section');
       const singleSection = document.getElementById('single-speaker-section');
+      const speakerBoxes = document.querySelectorAll('.speaker-box');
 
       if (speakerCount === 1) {
         singleSection.style.display = 'block';
@@ -127,16 +392,28 @@ HTML = """
       } else {
         singleSection.style.display = 'none';
         multiSection.style.display = 'block';
+
+        speakerBoxes.forEach((box) => {
+          const speaker = box.getAttribute('data-speaker');
+          const speakerIndex = speaker.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
+          box.style.display = speakerIndex <= speakerCount ? 'block' : 'none';
+        });
       }
     }
 
-    window.addEventListener('DOMContentLoaded', toggleMode);
+    window.addEventListener('DOMContentLoaded', () => {
+      const initial = parseInt(document.getElementById('speaker_count').value, 10);
+      setSpeakerCount(initial);
+    });
   </script>
 </head>
 <body>
-  <div class="card">
-    <h1>Japanese Text to Audio Generator</h1>
-    <p>Create MP3 audio from Japanese text using Edge TTS voices. You can use one voice or split lines between multiple speakers.</p>
+  <div class="page">
+    <section class="hero">
+      <div class="hero-badge">Made Easy IT Tool</div>
+      <h1>Japanese Text to Audio Generator</h1>
+      <p>Convert Japanese text into clean MP3 audio with one or multiple speakers, adjustable playback speed, and natural Japanese voices. Designed to be simple to use on desktop and mobile.</p>
+    </section>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -146,77 +423,125 @@ HTML = """
       {% endif %}
     {% endwith %}
 
-    <form method="post" action="{{ url_for('generate_audio') }}">
-      <label for="speaker_count">How many speakers?</label>
-      <select name="speaker_count" id="speaker_count" onchange="toggleMode()">
-        <option value="1">1 speaker</option>
-        <option value="2">2 speakers</option>
-        <option value="3">3 speakers</option>
-        <option value="4">4 speakers</option>
-      </select>
+    <div class="layout">
+      <main>
+        <form method="post" action="{{ url_for('generate_audio') }}">
+          <section class="card">
+            <h2>Audio Settings</h2>
+            <p class="section-copy">Choose how many people are speaking, set the voice style, then generate an MP3 file ready to download.</p>
 
-      <div id="single-speaker-section">
-        <div class="row">
-          <div>
-            <label for="single_voice">Voice</label>
-            <select name="single_voice" id="single_voice">
-              {% for label, value in voices.items() %}
-                <option value="{{ value }}">{{ label }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div>
-            <label for="single_rate">Speed (%)</label>
-            <input type="number" id="single_rate" name="single_rate" value="-20" min="-80" max="80" step="5">
-            <div class="hint">Negative is slower. Example: <code>-20</code> = 20% slower</div>
-          </div>
-        </div>
+            <label for="speaker_count">How many speakers?</label>
+            <input type="hidden" name="speaker_count" id="speaker_count" value="1">
+            <div class="speaker-picker" role="group" aria-label="Select number of speakers">
+              <button type="button" data-value="1" onclick="setSpeakerCount(1)">1 Speaker</button>
+              <button type="button" data-value="2" onclick="setSpeakerCount(2)">2 Speakers</button>
+              <button type="button" data-value="3" onclick="setSpeakerCount(3)">3 Speakers</button>
+              <button type="button" data-value="4" onclick="setSpeakerCount(4)">4 Speakers</button>
+            </div>
 
-        <label for="single_text">Text</label>
-        <textarea id="single_text" name="single_text" rows="10" placeholder="Paste Japanese text here..."></textarea>
-      </div>
-
-      <div id="multi-speaker-section" style="display:none;">
-        <p class="hint">Use one line per piece of dialogue. Prefix each line with <code>A:</code>, <code>B:</code>, <code>C:</code>, or <code>D:</code>.</p>
-
-        {% for speaker in ['A', 'B', 'C', 'D'] %}
-          <div class="speaker-box">
-            <h2>Speaker {{ speaker }}</h2>
-            <div class="row">
-              <div>
-                <label for="voice_{{ speaker }}">Voice</label>
-                <select name="voice_{{ speaker }}" id="voice_{{ speaker }}">
-                  {% for label, value in voices.items() %}
-                    <option value="{{ value }}">{{ label }}</option>
-                  {% endfor %}
-                </select>
+            <div id="single-speaker-section">
+              <div class="field-grid">
+                <div>
+                  <label for="single_voice">Voice</label>
+                  <select name="single_voice" id="single_voice">
+                    {% for label, value in voices.items() %}
+                      <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div>
+                  <label for="single_rate">Speaking Speed (%)</label>
+                  <input type="number" id="single_rate" name="single_rate" value="-20" min="-80" max="80" step="5">
+                  <p class="helper">Use negative values to slow it down. Example: <code>-20</code> = 20% slower.</p>
+                </div>
               </div>
+
+              <label for="single_text">Japanese Text</label>
+              <textarea id="single_text" name="single_text" placeholder="Paste your Japanese text here..."></textarea>
+            </div>
+
+            <div id="multi-speaker-section" style="display:none;">
+              <p class="section-copy">Enter one line per speaker using prefixes like <code>A:</code>, <code>B:</code>, <code>C:</code>, or <code>D:</code>. Only the speakers you selected will appear below.</p>
+
+              {% for speaker in ['A', 'B', 'C', 'D'] %}
+                <div class="speaker-box" data-speaker="{{ speaker }}">
+                  <h3>Speaker {{ speaker }}</h3>
+                  <div class="field-grid">
+                    <div>
+                      <label for="voice_{{ speaker }}">Voice</label>
+                      <select name="voice_{{ speaker }}" id="voice_{{ speaker }}">
+                        {% for label, value in voices.items() %}
+                          <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <div>
+                      <label for="rate_{{ speaker }}">Speaking Speed (%)</label>
+                      <input type="number" id="rate_{{ speaker }}" name="rate_{{ speaker }}" value="-20" min="-80" max="80" step="5">
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+
+              <label for="dialogue_text">Dialogue Text</label>
+              <textarea id="dialogue_text" name="dialogue_text" placeholder="A: すみません。
+B: はい。
+A: きっぷうりばは どこですか。"></textarea>
+            </div>
+
+            <div class="field-grid" style="margin-top:18px;">
               <div>
-                <label for="rate_{{ speaker }}">Speed (%)</label>
-                <input type="number" id="rate_{{ speaker }}" name="rate_{{ speaker }}" value="-20" min="-80" max="80" step="5">
+                <label for="output_name">Output Filename</label>
+                <input type="text" id="output_name" name="output_name" value="japanese_audio.mp3">
               </div>
             </div>
-          </div>
-        {% endfor %}
 
-        <label for="dialogue_text">Dialogue text</label>
-        <textarea id="dialogue_text" name="dialogue_text" rows="12" placeholder="A: すみません。\nB: はい。\nA: きっぷうりばは どこですか。"></textarea>
-      </div>
+            <div class="actions">
+              <button class="primary-btn" type="submit">Generate MP3</button>
+              <div class="subtle-note">Fast, clean and mobile-friendly. Multi-speaker mode uses FFmpeg to merge each line in order.</div>
+            </div>
+          </section>
+        </form>
+      </main>
 
-      <label for="output_name">Output filename</label>
-      <input type="text" id="output_name" name="output_name" value="japanese_audio.mp3">
+      <aside class="sidebar">
+        <section class="card">
+          <h2>How to Use</h2>
+          <ul class="sidebar-list">
+            <li>
+              <strong>Single speaker</strong>
+              Paste your full text, choose a voice, set the speed, and generate one MP3.
+            </li>
+            <li>
+              <strong>Multiple speakers</strong>
+              Select the number of speakers, assign voices, and prefix each line with <code>A:</code>, <code>B:</code>, <code>C:</code>, or <code>D:</code>.
+            </li>
+            <li>
+              <strong>Control the pace</strong>
+              Slow speech down for study and listening practice, or increase speed for faster review.
+            </li>
+          </ul>
+        </section>
 
-      <button type="submit">Generate MP3</button>
-    </form>
-  </div>
-
-  <div class="card">
-    <h2>Notes</h2>
-    <ul>
-      <li>You need <code>ffmpeg</code> installed to merge multiple speaker files.</li>
-      <li>For one speaker, the app creates a single MP3 directly.</li>
-      <li>For multiple speakers, each line is generated separately and merged in order.</li>
-    </ul>
+        <section class="card">
+          <h2>Good For</h2>
+          <ul class="sidebar-list">
+            <li>
+              <strong>Listening practice</strong>
+              Create custom audio from textbook passages or class notes.
+            </li>
+            <li>
+              <strong>Roleplays</strong>
+              Generate station, restaurant, travel, and classroom dialogues with multiple voices.
+            </li>
+            <li>
+              <strong>Revision</strong>
+              Turn vocabulary lists and short readings into repeatable study audio.
+            </li>
+          </ul>
+        </section>
+      </aside>
+    </div>
   </div>
 </body>
 </html>
