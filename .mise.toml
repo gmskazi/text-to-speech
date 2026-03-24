@@ -6,7 +6,7 @@ _.python.venv = { path = ".venv", create = true, uv_create_args = ["--seed"] }
 
 [tasks.install]
 description = "Install dependencies"
-run = "pip install edge-tts"
+run = "pip install edge-tts flask"
 
 [tasks.run]
 description = "Generate the Japanese audio"
