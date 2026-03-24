@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Japanese Text to Audio Generator</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #f8fafc 0%, #eef3f8 100%);
+      color: #0f172a;
+    }
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px 16px 32px;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid #dbe5ef;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(2, 8, 23, 0.08);
+    }
+    h1 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 2rem;
+    }
+    p {
+      margin-top: 0;
+      color: #334155;
+    }
+    .error {
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border: 1px solid #fecaca;
+      background: #fee2e2;
+      border-radius: 10px;
+      color: #7f1d1d;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    select,
+    input,
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 0.95rem;
+    }
+    textarea {
+      min-height: 180px;
+      resize: vertical;
+    }
+    .section {
+      margin-top: 16px;
+    }
+    .row {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .btn {
+      margin-top: 18px;
+      border: 0;
+      background: #111827;
+      color: #fff;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    @media (max-width: 760px) {
+      .grid,
+      .row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  <script>
+    function toggleMode() {
+      const count = parseInt(document.getElementById("speaker_count").value, 10);
+      const single = document.getElementById("single_mode");
+      const multi = document.getElementById("multi_mode");
+      single.style.display = count === 1 ? "block" : "none";
+      multi.style.display = count === 1 ? "none" : "block";
+      document.querySelectorAll(".speaker-settings").forEach((el) => {
+        const speaker = el.dataset.speaker;
+        const idx = speaker.charCodeAt(0) - "A".charCodeAt(0) + 1;
+        el.style.display = idx <= count ? "block" : "none";
+      });
+    }
+    window.addEventListener("DOMContentLoaded", toggleMode);
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Japanese Text to Audio Generator</h1>
+      <p>Create a downloadable MP3 using one or multiple Japanese voices.</p>
+
+      {% if error %}
+        <div class="error">{{ error }}</div>
+      {% endif %}
+
+      <form method="post" action="/generate">
+        <div class="grid">
+          <div>
+            <label for="speaker_count">Speaker Count</label>
+            <select id="speaker_count" name="speaker_count" onchange="toggleMode()">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </div>
+          <div>
+            <label for="output_name">Output Filename</label>
+            <input id="output_name" name="output_name" value="japanese_audio.mp3">
+          </div>
+        </div>
+
+        <div id="single_mode" class="section">
+          <div class="grid">
+            <div>
+              <label for="single_voice">Voice</label>
+              <select id="single_voice" name="single_voice">
+                {% for label, value in voices.items() %}
+                  <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label for="single_rate">Rate (%)</label>
+              <input type="number" id="single_rate" name="single_rate" value="-20" min="-80" max="80" step="5">
+            </div>
+          </div>
+          <div class="section">
+            <label for="single_text">Japanese Text</label>
+            <textarea id="single_text" name="single_text" placeholder="Paste your Japanese text here"></textarea>
+          </div>
+        </div>
+
+        <div id="multi_mode" class="section">
+          <div class="row">
+            {% for speaker in ['A', 'B', 'C', 'D'] %}
+              <div class="speaker-settings" data-speaker="{{ speaker }}">
+                <label>Speaker {{ speaker }} Voice</label>
+                <select name="voice_{{ speaker }}">
+                  {% for label, value in voices.items() %}
+                    <option value="{{ value }}">{{ label }}</option>
+                  {% endfor %}
+                </select>
+                <label>Speaker {{ speaker }} Rate (%)</label>
+                <input type="number" name="rate_{{ speaker }}" value="-20" min="-80" max="80" step="5">
+              </div>
+            {% endfor %}
+          </div>
+          <div class="section">
+            <label for="dialogue_text">Dialogue Text</label>
+            <textarea id="dialogue_text" name="dialogue_text" placeholder="A: すみません。&#10;B: はい。"></textarea>
+          </div>
+        </div>
+
+        <button class="btn" type="submit">Generate MP3</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
