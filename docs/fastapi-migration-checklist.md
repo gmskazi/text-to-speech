@@ -14,7 +14,7 @@ This checklist tracks the migration of the current text-to-speech app to FastAPI
 - [x] Add `app/api/routes_tts.py` for TTS HTTP endpoints.
 - [x] Add `app/services/` for generation and merge logic.
 - [x] Add `app/models/` for request/response models.
-- [x] Keep existing Flask implementation available during migration.
+- [x] Remove legacy web implementation after FastAPI cutover.
 
 ## 3) Shared Core Logic Extraction
 - [x] Move filename sanitization into a utility helper.

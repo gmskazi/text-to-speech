@@ -23,9 +23,12 @@ from app.services.tts_service import (
 from app.utils import ensure_mp3_name, to_rate_str
 
 app = FastAPI(
-    title="Japanese Text to Audio Generator",
+    title="Multilingual Text to Audio Generator",
     version="1.0.0",
-    description="FastAPI-based text-to-speech app for single and multi-speaker audio.",
+    description=(
+        "FastAPI-based text-to-speech app for multilingual "
+        "single and multi-speaker audio."
+    ),
 )
 app.include_router(router)
 

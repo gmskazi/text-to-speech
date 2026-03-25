@@ -1,11 +1,10 @@
 # FastAPI Architecture (Target)
 
 ## Goals
-- Keep behavior equivalent to current Flask app.
+- Keep behavior equivalent to the previous single-speaker and dialogue flows.
 - Isolate core TTS logic from web framework code.
 - Support clean validation and easier testability.
 - Provide a clear path to background-job scaling.
-- Keep Flask fallback runnable during migration and rollback windows.
 
 ## Proposed Layout
 ```text

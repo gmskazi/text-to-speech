@@ -75,3 +75,52 @@
 - No backend/API changes required.
 - Responsive behavior remains clean on mobile and desktop.
 - No custom header/footer included yet.
+
+## Execution Tracker
+
+### Objective
+- Complete multilingual FastAPI TTS migration and remove legacy web-stack references from active code, docs, and tooling.
+
+### Status Summary
+- Completed:
+  - Multilingual voice catalog plus language-aware UI and API flow.
+  - `GET /tts/voices` endpoint.
+  - UI restyle and updated product copy.
+  - Default output filename set to `tts_output.mp3`.
+  - Default speed set to `0`.
+  - "Rate" label updated to "Speed Rate".
+  - Tests updated for voices endpoint and speed defaults.
+- In progress:
+  - Validation and smoke checks after cleanup.
+- Pending:
+  - Final verification sweep.
+
+### Task Board
+- [x] Add multilingual voice model and language selectors.
+- [x] Persist selected language across UI mode changes.
+- [x] Add `/tts/voices` API endpoint.
+- [x] Update defaults (`tts_output.mp3`, speed `0`).
+- [x] Update UI labels and intro copy.
+- [x] Remove legacy app module and all legacy web-stack references.
+- [x] Add CI checks (lint, compile smoke, mypy, tests).
+- [x] Add Docker build support (local build and run only).
+
+### Validation Checklist
+- [x] `python -m py_compile app/main.py`
+- [x] `python -m compileall app tests`
+- [x] `ruff check .`
+- [x] `mypy app tests`
+- [x] `pytest -q tests/test_api.py`
+- [x] `pytest -q tests/test_text_utils.py`
+- [x] `pytest -q`
+- [ ] Manual checks:
+  - [ ] `/` form render
+  - [ ] `/docs` loads
+  - [ ] Single-speaker MP3 generation
+  - [ ] Multi-speaker merge with ffmpeg
+  - [ ] Invalid dialogue returns structured error
+
+### Notes
+- `ffmpeg` must be available on PATH for multi-speaker merge.
+- Docker daemon must be running locally to execute container smoke tests.
+- Historical metadata in `.git/` is expected unless git history is rewritten.

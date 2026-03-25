@@ -3,13 +3,12 @@
 ## Scope
 - Applies to the entire repository `japanese-text-to-speech/`.
 - Primary web app: `app/main.py` (FastAPI).
-- Legacy web app: `flaskapp/tts_flask.py`.
 - Script entrypoints: `scripts/female.py`, `scripts/female2.py`, `scripts/malefemale.py`, `scripts/malefemale2.py`.
 
 ## Repository Snapshot
 - Language: Python.
 - Tool version hint: Python 3.12 (`.mise.toml`).
-- Runtime deps in active code: `fastapi`, `flask`, `edge-tts`, `ffmpeg` (external binary).
+- Runtime deps in active code: `fastapi`, `edge-tts`, `ffmpeg` (external binary).
 - Tooling in repo: `pytest`, `ruff`, `mypy`, `pre-commit`, `pyproject.toml`.
 
 ## Environment Setup
@@ -29,10 +28,6 @@ pip install -e .[dev]
 - Start web app:
 ```bash
 uvicorn app.main:app --reload
-```
-- Start legacy Flask app:
-```bash
-python flaskapp/tts_flask.py
 ```
 - Run sample generators:
 ```bash
@@ -135,7 +130,6 @@ pytest -q -k parse_dialogue
 
 ### Error Handling
 - Catch specific exceptions where possible.
-- In Flask routes, convert recoverable errors to `flash(..., "error")` + redirect.
 - Keep subprocess calls strict with `check=True`.
 - Include stderr context for ffmpeg failures when available.
 - Raise clear `ValueError` messages for user input issues.
@@ -172,4 +166,3 @@ pytest -q -k parse_dialogue
 
 ## Known Repo Caveat
 - `ffmpeg` must be installed on system PATH for multi-speaker merge endpoints.
-- Keep Flask app available as fallback while FastAPI evolves.

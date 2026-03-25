@@ -12,8 +12,3 @@ run = "pip install -e ."
 description = "Run the FastAPI app"
 depends = ["install"]
 run = "uvicorn app.main:app --reload"
-
-[tasks.run-flask]
-description = "Run the legacy Flask app"
-depends = ["install"]
-run = "python flaskapp/tts_flask.py"

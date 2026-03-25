@@ -148,6 +148,5 @@ Suggested common error codes:
 
 ## Backward Compatibility Notes
 - Keep existing voice IDs where possible.
-- Keep output naming behavior compatible with current Flask app.
+- Keep output naming behavior stable for existing clients.
 - Preserve speaking-rate default (`0`) unless explicitly changed.
-- Keep Flask app available as a migration fallback.

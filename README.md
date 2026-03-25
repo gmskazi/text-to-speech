@@ -1,8 +1,7 @@
 # japanese-text-to-speech
 
-Japanese text-to-speech app with:
-- FastAPI (primary app)
-- Flask (legacy app, kept during migration)
+Multilingual text-to-speech app with:
+- FastAPI web app and API
 - `edge-tts` voice generation
 - `ffmpeg` for multi-speaker merge
 - Multi-language voice selection in the web UI
@@ -23,7 +22,7 @@ pip install -e .[dev]
 
 ## Run
 
-### FastAPI (primary)
+### FastAPI
 
 ```bash
 uvicorn app.main:app --reload
@@ -31,12 +30,6 @@ uvicorn app.main:app --reload
 
 - API docs: `http://127.0.0.1:8000/docs`
 - Web form UI: `http://127.0.0.1:8000/`
-
-### Flask (legacy)
-
-```bash
-python flaskapp/tts_flask.py
-```
 
 ## API Endpoints (FastAPI)
 
@@ -67,6 +60,27 @@ ruff check .
 mypy app tests
 pytest
 ```
+
+## Docker (local build)
+
+Local image build and run only (no registry push).
+
+Build image:
+
+```bash
+docker build -t multilingual-tts .
+```
+
+Run container:
+
+```bash
+docker run --rm -p 8000:8000 multilingual-tts
+```
+
+## CI
+
+- GitHub Actions workflow: `.github/workflows/ci.yml`
+- Runs compile smoke checks, Ruff lint, and pytest.
 
 Run one test file:
 
