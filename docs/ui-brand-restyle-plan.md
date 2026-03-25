@@ -91,9 +91,9 @@
   - "Rate" label updated to "Speed Rate".
   - Tests updated for voices endpoint and speed defaults.
 - In progress:
-  - Validation and smoke checks after cleanup.
+  - None.
 - Pending:
-  - Final verification sweep.
+  - None.
 
 ### Task Board
 - [x] Add multilingual voice model and language selectors.
@@ -113,12 +113,12 @@
 - [x] `pytest -q tests/test_api.py`
 - [x] `pytest -q tests/test_text_utils.py`
 - [x] `pytest -q`
-- [ ] Manual checks:
-  - [ ] `/` form render
-  - [ ] `/docs` loads
-  - [ ] Single-speaker MP3 generation
-  - [ ] Multi-speaker merge with ffmpeg
-  - [ ] Invalid dialogue returns structured error
+- [x] Manual checks:
+  - [x] `/` form render
+  - [x] `/docs` loads
+  - [x] Single-speaker MP3 generation
+  - [x] Multi-speaker merge with ffmpeg
+  - [x] Invalid dialogue returns structured error
 
 ### Notes
 - `ffmpeg` must be available on PATH for multi-speaker merge.
