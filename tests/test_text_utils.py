@@ -14,9 +14,9 @@ def test_ensure_mp3_name_sanitizes_and_appends_extension() -> None:
 @pytest.mark.parametrize(
     ("value", "expected"),
     [
-        (None, "-20%"),
+        (None, "+0%"),
         ("-20", "-20%"),
-        ("abc", "-20%"),
+        ("abc", "+0%"),
         (100, "+80%"),
         (-100, "-80%"),
         (5, "+5%"),

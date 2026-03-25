@@ -201,6 +201,12 @@
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
+    .triple-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
     .speaker-settings {
       border: 1px dashed #d5d1c6;
       background: #ffffff;
@@ -273,6 +279,7 @@
       }
 
       .grid,
+      .triple-grid,
       .row {
         grid-template-columns: 1fr;
       }
@@ -283,10 +290,70 @@
     }
   </style>
   <script>
+    const VOICES_BY_LANGUAGE = {{ voices_by_language | tojson }};
+
+    function populateVoiceSelect(selectElement, languageCode, preferredValue = null) {
+      const voices = VOICES_BY_LANGUAGE[languageCode] || VOICES_BY_LANGUAGE["ja-JP"] || {};
+      const options = Object.entries(voices);
+      const fallbackValue = options.length > 0 ? options[0][1] : "";
+      const selectedValue = preferredValue || selectElement.value || fallbackValue;
+
+      selectElement.innerHTML = "";
+      options.forEach(([label, value]) => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = label;
+        if (value === selectedValue) {
+          option.selected = true;
+        }
+        selectElement.appendChild(option);
+      });
+
+      const hasSelected = options.some(([, value]) => value === selectedValue);
+      if (!hasSelected && fallbackValue) {
+        selectElement.value = fallbackValue;
+      }
+    }
+
+    function updateSingleLanguageVoices() {
+      const language = document.getElementById("single_language").value;
+      const voiceSelect = document.getElementById("single_voice");
+      populateVoiceSelect(voiceSelect, language);
+    }
+
+    function updateDialogueLanguageVoices() {
+      const language = document.getElementById("dialogue_language").value;
+      document.querySelectorAll(".speaker-settings select").forEach((selectElement) => {
+        populateVoiceSelect(selectElement, language);
+      });
+    }
+
+    function syncLanguageAcrossModes(languageCode) {
+      const singleLanguage = document.getElementById("single_language");
+      const dialogueLanguage = document.getElementById("dialogue_language");
+
+      if (singleLanguage.value !== languageCode) {
+        singleLanguage.value = languageCode;
+      }
+      if (dialogueLanguage.value !== languageCode) {
+        dialogueLanguage.value = languageCode;
+      }
+
+      updateSingleLanguageVoices();
+      updateDialogueLanguageVoices();
+    }
+
+    function handleLanguageChange(sourceId) {
+      const source = document.getElementById(sourceId);
+      syncLanguageAcrossModes(source.value);
+    }
+
     function toggleMode() {
       const count = parseInt(document.getElementById("speaker_count").value, 10);
       const single = document.getElementById("single_mode");
       const multi = document.getElementById("multi_mode");
+      const activeLanguage = document.getElementById("single_language").value;
+
       single.style.display = count === 1 ? "block" : "none";
       multi.style.display = count === 1 ? "none" : "block";
       document.querySelectorAll(".speaker-settings").forEach((el) => {
@@ -294,16 +361,22 @@
         const idx = speaker.charCodeAt(0) - "A".charCodeAt(0) + 1;
         el.style.display = idx <= count ? "block" : "none";
       });
+
+      syncLanguageAcrossModes(activeLanguage);
     }
-    window.addEventListener("DOMContentLoaded", toggleMode);
+
+    window.addEventListener("DOMContentLoaded", () => {
+      syncLanguageAcrossModes(document.getElementById("single_language").value);
+      toggleMode();
+    });
   </script>
 </head>
 <body>
   <div class="container">
     <div class="card">
       <div class="intro">
-        <p class="section-kicker">Text To Speech Workflow</p>
-        <h2>Generate high-performing voice audio in minutes</h2>
+        <p class="section-kicker">Text to speech generation</p>
+        <h2>Generate high-performing voice audio in seconds</h2>
         <p class="description">
           Configure one voice for narration or use multiple voices for dialogue-style
           output. Export the final result as a downloadable MP3.
@@ -327,7 +400,7 @@
           </div>
           <div>
             <label for="output_name">Output Filename</label>
-            <input id="output_name" name="output_name" value="japanese_audio.mp3">
+            <input id="output_name" name="output_name" value="tts_output.mp3">
             <p class="hint">The file name will be sanitized and saved as an MP3.</p>
           </div>
         </div>
@@ -335,7 +408,15 @@
         <div class="mode-wrapper">
           <div id="single_mode" class="mode-card section">
             <h3 class="mode-title">Single Speaker Mode</h3>
-          <div class="grid">
+          <div class="triple-grid">
+            <div>
+              <label for="single_language">Language</label>
+              <select id="single_language" name="single_language" onchange="handleLanguageChange('single_language')">
+                {% for code, label in languages.items() %}
+                  <option value="{{ code }}" {% if code == single_default_language %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
             <div>
               <label for="single_voice">Voice</label>
               <select id="single_voice" name="single_voice">
@@ -345,19 +426,33 @@
               </select>
             </div>
             <div>
-              <label for="single_rate">Rate (%)</label>
-              <input type="number" id="single_rate" name="single_rate" value="-20" min="-80" max="80" step="5">
+              <label for="single_rate">Speed Rate (%)</label>
+              <input type="number" id="single_rate" name="single_rate" value="0" min="-80" max="80" step="5">
             </div>
           </div>
           <div class="section">
-            <label for="single_text">Japanese Text</label>
-            <textarea id="single_text" name="single_text" placeholder="Paste your Japanese text here"></textarea>
+            <label for="single_text">Input Text</label>
+            <textarea id="single_text" name="single_text" placeholder="Paste your text here"></textarea>
             <p class="hint">Recommended for narration, lessons, and simple prompts.</p>
           </div>
           </div>
 
           <div id="multi_mode" class="mode-card section">
             <h3 class="mode-title">Multi Speaker Dialogue Mode</h3>
+          <div class="grid">
+            <div>
+              <label for="dialogue_language">Language</label>
+              <select id="dialogue_language" name="dialogue_language" onchange="handleLanguageChange('dialogue_language')">
+                {% for code, label in languages.items() %}
+                  <option value="{{ code }}" {% if code == dialogue_default_language %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label>&nbsp;</label>
+              <p class="hint">Speaker voice menus will update based on selected language.</p>
+            </div>
+          </div>
           <div class="row">
             {% for speaker in ['A', 'B', 'C', 'D'] %}
               <div class="speaker-settings" data-speaker="{{ speaker }}">
@@ -367,8 +462,8 @@
                     <option value="{{ value }}">{{ label }}</option>
                   {% endfor %}
                 </select>
-                <label>Speaker {{ speaker }} Rate (%)</label>
-                <input type="number" name="rate_{{ speaker }}" value="-20" min="-80" max="80" step="5">
+                <label>Speaker {{ speaker }} Speed Rate (%)</label>
+                <input type="number" name="rate_{{ speaker }}" value="0" min="-80" max="80" step="5">
               </div>
             {% endfor %}
           </div>
@@ -390,12 +485,13 @@
         <ol class="howto-list">
           <li>Select the number of speakers and set your output filename.</li>
           <li>
-            For one speaker, choose the voice and rate, then paste Japanese text in
-            the single text box.
+            For one speaker, choose a language, voice, and speed rate, then paste your
+            text in the single text box.
           </li>
           <li>
-            For multiple speakers, set each speaker voice/rate and format dialogue as
-            lines like <code>A: こんにちは</code> and <code>B: はい</code>.
+            For multiple speakers, choose a language, set each speaker voice/speed
+            rate, and format dialogue as lines like <code>A: こんにちは</code> and
+            <code>B: はい</code>.
           </li>
           <li>Click <strong>Generate MP3</strong> to create and download the audio file.</li>
         </ol>

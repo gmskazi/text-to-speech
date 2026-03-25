@@ -5,6 +5,7 @@ Japanese text-to-speech app with:
 - Flask (legacy app, kept during migration)
 - `edge-tts` voice generation
 - `ffmpeg` for multi-speaker merge
+- Multi-language voice selection in the web UI
 
 ## Requirements
 
@@ -40,6 +41,7 @@ python flaskapp/tts_flask.py
 ## API Endpoints (FastAPI)
 
 - `GET /health`
+- `GET /tts/voices`
 - `POST /tts/single`
 - `POST /tts/dialogue`
 - `POST /tts/single/jobs`

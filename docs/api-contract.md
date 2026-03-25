@@ -16,6 +16,24 @@ Example response:
 }
 ```
 
+### `GET /tts/voices`
+List curated voices for a language.
+
+Query parameters:
+- `language` (optional): language code such as `ja-JP`, `en-US`, `es-ES`.
+
+Example response:
+```json
+{
+  "language": "en-US",
+  "language_label": "English (US)",
+  "voices": [
+    {"label": "Jenny (Female)", "value": "en-US-JennyNeural"},
+    {"label": "Guy (Male)", "value": "en-US-GuyNeural"}
+  ]
+}
+```
+
 ### `POST /tts/single`
 Generate one MP3 from a single speaker.
 
@@ -24,7 +42,7 @@ Request body:
 {
   "text": "こんにちは。",
   "voice": "ja-JP-NanamiNeural",
-  "rate": -20,
+  "rate": 0,
   "output_name": "single_output.mp3"
 }
 ```
@@ -94,8 +112,8 @@ Request body:
   "speaker_count": 2,
   "dialogue_text": "A: すみません。\nB: はい。",
   "speakers": {
-    "A": {"voice": "ja-JP-NanamiNeural", "rate": -20},
-    "B": {"voice": "ja-JP-KeitaNeural", "rate": -20}
+    "A": {"voice": "ja-JP-NanamiNeural", "rate": 0},
+    "B": {"voice": "ja-JP-KeitaNeural", "rate": 0}
   },
   "output_name": "dialogue_output.mp3"
 }
@@ -131,5 +149,5 @@ Suggested common error codes:
 ## Backward Compatibility Notes
 - Keep existing voice IDs where possible.
 - Keep output naming behavior compatible with current Flask app.
-- Preserve speaking-rate default (`-20`) unless explicitly changed.
+- Preserve speaking-rate default (`0`) unless explicitly changed.
 - Keep Flask app available as a migration fallback.

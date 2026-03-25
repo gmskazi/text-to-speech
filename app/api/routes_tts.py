@@ -4,10 +4,11 @@ import asyncio
 import shutil
 import tempfile
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 
+from app.config import LANGUAGE_LABELS, language_or_default, voices_for_language
 from app.models import (
     DialogueRequest,
     JobCreateResponse,
@@ -38,6 +39,22 @@ def _speaker_map_for_dialogue(payload: DialogueRequest) -> dict[str, dict[str, s
 @router.get("/health")
 async def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@router.get("/tts/voices")
+async def list_tts_voices(
+    language: str = Query(default="ja-JP"),
+) -> dict[str, object]:
+    resolved = language_or_default(language)
+    options = voices_for_language(resolved)
+    return {
+        "language": resolved,
+        "language_label": LANGUAGE_LABELS.get(resolved, "Japanese"),
+        "voices": [
+            {"label": label, "value": value}
+            for label, value in options.items()
+        ],
+    }
 
 
 @router.post("/tts/single")

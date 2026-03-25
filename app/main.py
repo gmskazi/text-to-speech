@@ -9,7 +9,13 @@ from fastapi.templating import Jinja2Templates
 from starlette.background import BackgroundTask
 
 from app.api import router
-from app.config import VOICE_OPTIONS
+from app.config import (
+    LANGUAGE_LABELS,
+    VOICE_OPTIONS_BY_LANGUAGE,
+    first_voice_for_language,
+    language_or_default,
+    voices_for_language,
+)
 from app.services.tts_service import (
     synthesize_dialogue_to_file,
     synthesize_single_to_file,
@@ -32,12 +38,30 @@ def _form_value_to_str(value: object, default: str = "") -> str:
     return default
 
 
+def _template_context(
+    error: str | None = None,
+    *,
+    single_language: str = "ja-JP",
+    dialogue_language: str = "ja-JP",
+) -> dict[str, object]:
+    single_resolved = language_or_default(single_language)
+    dialogue_resolved = language_or_default(dialogue_language)
+    return {
+        "languages": LANGUAGE_LABELS,
+        "single_default_language": single_resolved,
+        "dialogue_default_language": dialogue_resolved,
+        "voices": voices_for_language(single_resolved),
+        "voices_by_language": VOICE_OPTIONS_BY_LANGUAGE,
+        "error": error,
+    }
+
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"voices": VOICE_OPTIONS, "error": None},
+        context=_template_context(),
     )
 
 
@@ -47,9 +71,15 @@ async def generate_audio(request: Request) -> Response:
     speaker_count = int(_form_value_to_str(form.get("speaker_count", "1"), "1"))
     output_name = ensure_mp3_name(
         _form_value_to_str(
-            form.get("output_name", "japanese_audio.mp3"),
-            "japanese_audio.mp3",
+            form.get("output_name", "tts_output.mp3"),
+            "tts_output.mp3",
         )
+    )
+    single_language = language_or_default(
+        _form_value_to_str(form.get("single_language", "ja-JP"), "ja-JP")
+    )
+    dialogue_language = language_or_default(
+        _form_value_to_str(form.get("dialogue_language", "ja-JP"), "ja-JP")
     )
 
     try:
@@ -59,10 +89,10 @@ async def generate_audio(request: Request) -> Response:
                 raise ValueError("Please enter some text for single-speaker mode.")
 
             voice = _form_value_to_str(
-                form.get("single_voice", "ja-JP-NanamiNeural"),
-                "ja-JP-NanamiNeural",
+                form.get("single_voice", first_voice_for_language(single_language)),
+                first_voice_for_language(single_language),
             )
-            rate_value = _form_value_to_str(form.get("single_rate", "-20"), "-20")
+            rate_value = _form_value_to_str(form.get("single_rate", "0"), "0")
             rate = to_rate_str(rate_value)
 
             temp_dir = tempfile.mkdtemp(prefix="tts_single_form_")
@@ -81,14 +111,15 @@ async def generate_audio(request: Request) -> Response:
             )
 
         speaker_settings = {}
+        dialogue_default_voice = first_voice_for_language(dialogue_language)
         for speaker in ["A", "B", "C", "D"]:
             speaker_settings[speaker] = {
                 "voice": _form_value_to_str(
-                    form.get(f"voice_{speaker}", "ja-JP-NanamiNeural"),
-                    "ja-JP-NanamiNeural",
+                    form.get(f"voice_{speaker}", dialogue_default_voice),
+                    dialogue_default_voice,
                 ),
                 "rate": to_rate_str(
-                    _form_value_to_str(form.get(f"rate_{speaker}", "-20"), "-20")
+                    _form_value_to_str(form.get(f"rate_{speaker}", "0"), "0")
                 ),
             }
 
@@ -113,6 +144,10 @@ async def generate_audio(request: Request) -> Response:
         return templates.TemplateResponse(
             request=request,
             name="index.html",
-            context={"voices": VOICE_OPTIONS, "error": str(error)},
+            context=_template_context(
+                str(error),
+                single_language=single_language,
+                dialogue_language=dialogue_language,
+            ),
             status_code=400,
         )

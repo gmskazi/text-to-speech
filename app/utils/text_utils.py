@@ -14,12 +14,12 @@ class DialogueLine(TypedDict):
 
 def to_rate_str(value: str | int | float | None) -> str:
     if value is None:
-        rate = -20
+        rate = 0
     else:
         try:
             rate = int(value)
         except (TypeError, ValueError):
-            rate = -20
+            rate = 0
     rate = max(-80, min(80, rate))
     return f"{rate:+d}%"
 

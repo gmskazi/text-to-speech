@@ -17,6 +17,26 @@ def test_health() -> None:
     assert response.json() == {"status": "ok"}
 
 
+def test_list_voices_default_language() -> None:
+    response = client.get("/tts/voices")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["language"] == "ja-JP"
+    assert data["language_label"] == "Japanese"
+    assert len(data["voices"]) > 0
+    assert {"label", "value"}.issubset(data["voices"][0].keys())
+
+
+def test_list_voices_specific_and_fallback_language() -> None:
+    es_response = client.get("/tts/voices", params={"language": "es-ES"})
+    assert es_response.status_code == 200
+    assert es_response.json()["language"] == "es-ES"
+
+    fallback_response = client.get("/tts/voices", params={"language": "xx-XX"})
+    assert fallback_response.status_code == 200
+    assert fallback_response.json()["language"] == "ja-JP"
+
+
 def test_single_tts_endpoint(monkeypatch: pytest.MonkeyPatch) -> None:
     async def fake_single(
         *,
