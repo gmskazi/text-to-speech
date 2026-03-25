@@ -1,4 +1,4 @@
-# Japanese Text to Speech
+# Text to Speech
 
 A Docker-first multilingual text-to-speech app built with FastAPI.
 
