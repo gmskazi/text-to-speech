@@ -36,14 +36,18 @@
 
     body {
       margin: 0;
+      min-height: 100vh;
+      display: flex;
+      width: 100%;
       font-family: "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
       color: var(--text-body);
       background: var(--surface-main);
     }
 
     .container {
+      width: 100%;
       max-width: 980px;
-      margin: 32px auto 0;
+      margin: auto;
       padding: 0 16px 44px;
       position: relative;
       z-index: 3;
@@ -285,7 +289,7 @@
 
     @media (max-width: 760px) {
       .container {
-        margin-top: 18px;
+        margin: 0;
       }
 
       .card {
