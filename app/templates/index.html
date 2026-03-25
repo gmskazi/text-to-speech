@@ -4,89 +4,281 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Japanese Text to Audio Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
   <style>
+    :root {
+      --brand-night: #071423;
+      --brand-night-soft: #10263f;
+      --brand-accent: #09b7bc;
+      --brand-accent-dark: #088f94;
+      --surface-main: #f7f5ef;
+      --surface-card: #ffffff;
+      --text-strong: #111111;
+      --text-body: #2b2b2b;
+      --text-muted: #4f4f4f;
+      --error-bg: #fff1f1;
+      --error-border: #f4b8b8;
+      --error-text: #8a1d1d;
+      --border-soft: #d9d6ce;
+      --ring: rgba(9, 183, 188, 0.28);
+      --shadow-soft: 0 18px 40px rgba(7, 20, 35, 0.12);
+      --shadow-focus: 0 0 0 3px var(--ring);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      font-family: "Segoe UI", Helvetica, Arial, sans-serif;
-      background: linear-gradient(180deg, #f8fafc 0%, #eef3f8 100%);
-      color: #0f172a;
+      font-family: "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
+      color: var(--text-body);
+      background: var(--surface-main);
     }
+
     .container {
       max-width: 980px;
-      margin: 0 auto;
-      padding: 24px 16px 32px;
+      margin: 32px auto 0;
+      padding: 0 16px 44px;
+      position: relative;
+      z-index: 3;
     }
+
     .card {
-      background: #ffffff;
-      border: 1px solid #dbe5ef;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 10px 30px rgba(2, 8, 23, 0.08);
+      background: var(--surface-card);
+      border: 1px solid var(--border-soft);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: var(--shadow-soft);
+      animation: card-enter 360ms ease-out both;
     }
-    h1 {
+
+    @keyframes card-enter {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .section-kicker {
       margin-top: 0;
-      margin-bottom: 10px;
-      font-size: 2rem;
+      margin-bottom: 6px;
+      font-family: "Oswald", Impact, "Arial Narrow Bold", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.8rem;
+      color: var(--brand-accent-dark);
     }
-    p {
+
+    .card h2 {
+      margin: 0 0 8px;
+      font-family: "Oswald", Impact, "Arial Narrow Bold", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      line-height: 1.1;
+      font-size: clamp(1.75rem, 3vw, 2.2rem);
+      color: var(--text-strong);
+    }
+
+    .description {
       margin-top: 0;
-      color: #334155;
+      margin-bottom: 18px;
+      color: var(--text-muted);
+      line-height: 1.55;
     }
+
+    .intro {
+      max-width: 840px;
+      margin: 0 auto 20px;
+      text-align: center;
+    }
+
+    .intro .section-kicker {
+      width: 100%;
+      text-align: left;
+    }
+
+    .intro .description {
+      margin-left: auto;
+      margin-right: auto;
+      max-width: 760px;
+    }
+
     .error {
-      margin-bottom: 12px;
-      padding: 10px 12px;
-      border: 1px solid #fecaca;
-      background: #fee2e2;
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--error-border);
+      background: var(--error-bg);
       border-radius: 10px;
-      color: #7f1d1d;
+      color: var(--error-text);
+      font-weight: 500;
     }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .mode-wrapper {
+      margin-top: 16px;
+      display: grid;
       gap: 14px;
     }
+
+    .mode-card {
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      padding: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfaf7 100%);
+      transition: border-color 160ms ease, box-shadow 160ms ease;
+    }
+
+    .mode-card:hover {
+      border-color: #c6c1b5;
+    }
+
+    .mode-title {
+      margin: 0 0 10px;
+      font-family: "Oswald", Impact, "Arial Narrow Bold", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: var(--text-strong);
+      font-size: 1.25rem;
+    }
+
     label {
       display: block;
       margin-bottom: 6px;
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
+      color: var(--text-strong);
     }
+
     select,
     input,
     textarea {
       width: 100%;
       box-sizing: border-box;
-      border: 1px solid #cbd5e1;
+      border: 1px solid #cfc9bb;
       border-radius: 10px;
-      padding: 10px;
+      padding: 10px 11px;
       font-size: 0.95rem;
+      color: var(--text-body);
+      background: #ffffff;
+      transition: border-color 140ms ease, box-shadow 140ms ease;
     }
+
+    select:focus,
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--brand-accent);
+      box-shadow: var(--shadow-focus);
+    }
+
     textarea {
-      min-height: 180px;
+      min-height: 172px;
       resize: vertical;
     }
+
     .section {
       margin-top: 16px;
     }
+
     .row {
       display: grid;
       gap: 10px;
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
-    .btn {
-      margin-top: 18px;
-      border: 0;
-      background: #111827;
-      color: #fff;
+
+    .speaker-settings {
+      border: 1px dashed #d5d1c6;
+      background: #ffffff;
       border-radius: 10px;
-      padding: 12px 14px;
-      font-weight: 700;
-      cursor: pointer;
+      padding: 10px;
     }
+
+    .btn {
+      margin-top: 20px;
+      border: 0;
+      background: linear-gradient(180deg, #06203a 0%, #071423 100%);
+      color: #f8fdff;
+      border-radius: 999px;
+      padding: 12px 20px;
+      min-width: 170px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+      box-shadow: 0 10px 24px rgba(7, 20, 35, 0.2);
+    }
+
+    .btn:hover {
+      background: linear-gradient(180deg, #0a2d4f 0%, #0f2f4f 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 12px 26px rgba(7, 20, 35, 0.24);
+    }
+
+    .hint {
+      margin-top: 6px;
+      margin-bottom: 0;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .howto {
+      margin-top: 26px;
+      border-top: 1px solid var(--border-soft);
+      padding-top: 20px;
+    }
+
+    .howto-title {
+      margin: 0 0 10px;
+      font-family: "Oswald", Impact, "Arial Narrow Bold", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: var(--text-strong);
+      font-size: 1.35rem;
+    }
+
+    .howto-list {
+      margin: 0;
+      padding-left: 22px;
+      color: var(--text-body);
+      line-height: 1.6;
+    }
+
+    .howto-list li + li {
+      margin-top: 8px;
+    }
+
     @media (max-width: 760px) {
+      .container {
+        margin-top: 18px;
+      }
+
+      .card {
+        padding: 18px;
+      }
+
       .grid,
       .row {
         grid-template-columns: 1fr;
+      }
+
+      .btn {
+        width: 100%;
       }
     }
   </style>
@@ -109,8 +301,14 @@
 <body>
   <div class="container">
     <div class="card">
-      <h1>Japanese Text to Audio Generator</h1>
-      <p>Create a downloadable MP3 using one or multiple Japanese voices.</p>
+      <div class="intro">
+        <p class="section-kicker">Text To Speech Workflow</p>
+        <h2>Generate high-performing voice audio in minutes</h2>
+        <p class="description">
+          Configure one voice for narration or use multiple voices for dialogue-style
+          output. Export the final result as a downloadable MP3.
+        </p>
+      </div>
 
       {% if error %}
         <div class="error">{{ error }}</div>
@@ -130,10 +328,13 @@
           <div>
             <label for="output_name">Output Filename</label>
             <input id="output_name" name="output_name" value="japanese_audio.mp3">
+            <p class="hint">The file name will be sanitized and saved as an MP3.</p>
           </div>
         </div>
 
-        <div id="single_mode" class="section">
+        <div class="mode-wrapper">
+          <div id="single_mode" class="mode-card section">
+            <h3 class="mode-title">Single Speaker Mode</h3>
           <div class="grid">
             <div>
               <label for="single_voice">Voice</label>
@@ -151,10 +352,12 @@
           <div class="section">
             <label for="single_text">Japanese Text</label>
             <textarea id="single_text" name="single_text" placeholder="Paste your Japanese text here"></textarea>
+            <p class="hint">Recommended for narration, lessons, and simple prompts.</p>
           </div>
-        </div>
+          </div>
 
-        <div id="multi_mode" class="section">
+          <div id="multi_mode" class="mode-card section">
+            <h3 class="mode-title">Multi Speaker Dialogue Mode</h3>
           <div class="row">
             {% for speaker in ['A', 'B', 'C', 'D'] %}
               <div class="speaker-settings" data-speaker="{{ speaker }}">
@@ -172,11 +375,31 @@
           <div class="section">
             <label for="dialogue_text">Dialogue Text</label>
             <textarea id="dialogue_text" name="dialogue_text" placeholder="A: すみません。&#10;B: はい。"></textarea>
+            <p class="hint">
+              Start each line with a speaker label like A:, B:, C:, or D:.
+            </p>
+          </div>
           </div>
         </div>
 
         <button class="btn" type="submit">Generate MP3</button>
       </form>
+
+      <section class="howto" aria-labelledby="howto-title">
+        <h3 id="howto-title" class="howto-title">How to use this tool</h3>
+        <ol class="howto-list">
+          <li>Select the number of speakers and set your output filename.</li>
+          <li>
+            For one speaker, choose the voice and rate, then paste Japanese text in
+            the single text box.
+          </li>
+          <li>
+            For multiple speakers, set each speaker voice/rate and format dialogue as
+            lines like <code>A: こんにちは</code> and <code>B: はい</code>.
+          </li>
+          <li>Click <strong>Generate MP3</strong> to create and download the audio file.</li>
+        </ol>
+      </section>
     </div>
   </div>
 </body>
