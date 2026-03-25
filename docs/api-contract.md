@@ -34,6 +34,10 @@ Example response:
 }
 ```
 
+Notes:
+- Voice availability can vary by runtime region/environment.
+- For `ja-JP`, multilingual fallback voices may be included to support 3-4 speaker dialogue reliably.
+
 ### `POST /tts/single`
 Generate one MP3 from a single speaker.
 
@@ -43,13 +47,15 @@ Request body:
   "text": "こんにちは。",
   "voice": "ja-JP-NanamiNeural",
   "rate": 0,
-  "output_name": "single_output.mp3"
+  "output_name": "single_output.mp3",
+  "natural_mode": true
 }
 ```
 
 Notes:
 - `rate` should be clamped to supported bounds (for example `-80` to `80`).
 - `output_name` should be sanitized to filename only and end with `.mp3`.
+- `natural_mode` is optional and defaults to `false` for API clients.
 
 Success response:
 - HTTP 200
@@ -115,15 +121,18 @@ Request body:
     "A": {"voice": "ja-JP-NanamiNeural", "rate": 0},
     "B": {"voice": "ja-JP-KeitaNeural", "rate": 0}
   },
-  "output_name": "dialogue_output.mp3"
+  "output_name": "dialogue_output.mp3",
+  "natural_mode": true
 }
 ```
 
 Validation rules:
 - `speaker_count` allowed range: `1..4`.
-- Dialogue lines must include speaker prefix and text (`A: ...`).
-- Allowed speaker prefixes are constrained by `speaker_count`.
-- Empty lines are ignored; empty speaker text is invalid.
+- Dialogue lines may include speaker prefix (`A: ...`).
+- Unlabeled lines continue with the previous speaker; first unlabeled line defaults to `A`.
+- Allowed explicit speaker prefixes are constrained by `speaker_count`.
+- Empty lines are ignored; empty speaker text after a valid label is invalid.
+- `natural_mode` is optional and defaults to `false` for API clients.
 
 Success response:
 - HTTP 200

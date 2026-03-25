@@ -129,6 +129,171 @@ def test_dialogue_validation_error(monkeypatch: pytest.MonkeyPatch) -> None:
     assert "Invalid speaker" in response.json()["detail"]
 
 
+def test_single_tts_natural_mode_normalizes_text(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, str] = {}
+
+    async def fake_single(
+        *,
+        text: str,
+        voice: str,
+        rate: str,
+        output_file: str,
+    ) -> None:
+        captured["text"] = text
+        del voice, rate
+        Path(output_file).write_bytes(b"fake-single")
+
+    monkeypatch.setattr(
+        "app.api.routes_tts.synthesize_single_to_file",
+        fake_single,
+    )
+
+    payload = {
+        "text": "Hello!!!    How are you????",
+        "voice": "en-US-JennyNeural",
+        "rate": 0,
+        "output_name": "natural-single.mp3",
+        "natural_mode": True,
+    }
+    response = client.post("/tts/single", json=payload)
+
+    assert response.status_code == 200
+    assert captured["text"] == "Hello! How are you?"
+
+
+def test_dialogue_tts_natural_mode_normalizes_text(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, str] = {}
+
+    async def fake_dialogue(
+        *,
+        dialogue_text: str,
+        speaker_count: int,
+        speaker_settings: dict[str, dict[str, str]],
+        temp_dir: str,
+        output_file: str,
+    ) -> None:
+        captured["dialogue_text"] = dialogue_text
+        del speaker_count, speaker_settings, temp_dir
+        Path(output_file).write_bytes(b"fake-dialogue")
+
+    monkeypatch.setattr(
+        "app.api.routes_tts.synthesize_dialogue_to_file",
+        fake_dialogue,
+    )
+
+    payload = {
+        "speaker_count": 2,
+        "dialogue_text": "A: Hi!!!\nB: I'm fine????",
+        "speakers": {
+            "A": {"voice": "en-US-JennyNeural", "rate": 0},
+            "B": {"voice": "en-US-GuyNeural", "rate": 0},
+        },
+        "output_name": "natural-dialogue.mp3",
+        "natural_mode": True,
+    }
+    response = client.post("/tts/dialogue", json=payload)
+
+    assert response.status_code == 200
+    assert captured["dialogue_text"] == "A: Hi!\nB: I'm fine?"
+
+
+def test_single_tts_natural_mode_retries_on_no_audio(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = {"count": 0}
+
+    async def flaky_single(
+        *,
+        text: str,
+        voice: str,
+        rate: str,
+        output_file: str,
+    ) -> None:
+        calls["count"] += 1
+        del text, voice, rate
+        if calls["count"] == 1:
+            raise RuntimeError(
+                "No audio was received. Please verify that your parameters are correct."
+            )
+        Path(output_file).write_bytes(b"fake-single")
+
+    monkeypatch.setattr(
+        "app.api.routes_tts.synthesize_single_to_file",
+        flaky_single,
+    )
+
+    payload = {
+        "text": "Hello!!!",
+        "voice": "en-US-JennyNeural",
+        "rate": 0,
+        "output_name": "retry-single.mp3",
+        "natural_mode": True,
+    }
+    response = client.post("/tts/single", json=payload)
+
+    assert response.status_code == 200
+    assert calls["count"] == 2
+
+
+def test_dialogue_tts_natural_mode_retries_on_no_audio(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = {"count": 0}
+
+    async def flaky_dialogue(
+        *,
+        dialogue_text: str,
+        speaker_count: int,
+        speaker_settings: dict[str, dict[str, str]],
+        temp_dir: str,
+        output_file: str,
+    ) -> None:
+        calls["count"] += 1
+        del dialogue_text, speaker_count, speaker_settings, temp_dir
+        if calls["count"] == 1:
+            raise RuntimeError(
+                "No audio was received. Please verify that your parameters are correct."
+            )
+        Path(output_file).write_bytes(b"fake-dialogue")
+
+    monkeypatch.setattr(
+        "app.api.routes_tts.synthesize_dialogue_to_file",
+        flaky_dialogue,
+    )
+
+    payload = {
+        "speaker_count": 2,
+        "dialogue_text": "A: Hi!!!\nB: Fine????",
+        "speakers": {
+            "A": {"voice": "en-US-JennyNeural", "rate": 0},
+            "B": {"voice": "en-US-GuyNeural", "rate": 0},
+        },
+        "output_name": "retry-dialogue.mp3",
+        "natural_mode": True,
+    }
+    response = client.post("/tts/dialogue", json=payload)
+
+    assert response.status_code == 200
+    assert calls["count"] == 2
+
+
+def test_single_tts_rejects_punctuation_only_text() -> None:
+    payload = {
+        "text": "!!!",
+        "voice": "en-US-JennyNeural",
+        "rate": 0,
+        "output_name": "punct.mp3",
+    }
+    response = client.post("/tts/single", json=payload)
+
+    assert response.status_code == 400
+    assert "speakable content" in response.json()["detail"]
+
+
 def test_create_job_and_read_status(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_run_single_job(job_id: str, payload: Any) -> None:
         del payload

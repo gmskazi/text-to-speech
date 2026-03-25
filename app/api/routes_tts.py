@@ -20,9 +20,23 @@ from app.services.tts_service import (
     synthesize_dialogue_to_file,
     synthesize_single_to_file,
 )
-from app.utils import ensure_mp3_name, to_rate_str
+from app.utils import (
+    ensure_mp3_name,
+    infer_language_from_voice,
+    normalize_dialogue_text,
+    normalize_for_speech,
+    to_rate_str,
+)
 
 router = APIRouter()
+_NO_AUDIO_MESSAGE = (
+    "No audio could be generated. Please include speakable text "
+    "(letters, words, or numbers), or try a different voice/language."
+)
+
+
+def _is_no_audio_error(error: Exception) -> bool:
+    return "no audio was received" in str(error).lower()
 
 
 def _speaker_map_for_dialogue(payload: DialogueRequest) -> dict[str, dict[str, str]]:
@@ -51,8 +65,7 @@ async def list_tts_voices(
         "language": resolved,
         "language_label": LANGUAGE_LABELS.get(resolved, "Japanese"),
         "voices": [
-            {"label": label, "value": value}
-            for label, value in options.items()
+            {"label": label, "value": value} for label, value in options.items()
         ],
     }
 
@@ -62,14 +75,34 @@ async def tts_single(payload: SingleSpeakerRequest) -> FileResponse:
     output_name = ensure_mp3_name(payload.output_name)
     temp_dir = tempfile.mkdtemp(prefix="tts_single_")
     output_path = f"{temp_dir}/{output_name}"
+    language = infer_language_from_voice(payload.voice)
+    original_text = payload.text
+    text = original_text
+    if payload.natural_mode:
+        text = normalize_for_speech(text, language)
 
     try:
-        await synthesize_single_to_file(
-            text=payload.text,
-            voice=payload.voice,
-            rate=to_rate_str(payload.rate),
-            output_file=output_path,
-        )
+        try:
+            await synthesize_single_to_file(
+                text=text,
+                voice=payload.voice,
+                rate=to_rate_str(payload.rate),
+                output_file=output_path,
+            )
+        except Exception as error:
+            if not (payload.natural_mode and _is_no_audio_error(error)):
+                raise
+            try:
+                await synthesize_single_to_file(
+                    text=original_text,
+                    voice=payload.voice,
+                    rate=to_rate_str(payload.rate),
+                    output_file=output_path,
+                )
+            except Exception as fallback_error:
+                if _is_no_audio_error(fallback_error):
+                    raise ValueError(_NO_AUDIO_MESSAGE) from fallback_error
+                raise
     except ValueError as error:
         shutil.rmtree(temp_dir, ignore_errors=True)
         raise HTTPException(status_code=400, detail=str(error)) from error
@@ -93,15 +126,40 @@ async def tts_dialogue(payload: DialogueRequest) -> FileResponse:
     output_name = ensure_mp3_name(payload.output_name)
     temp_dir = tempfile.mkdtemp(prefix="tts_multi_")
     output_path = f"{temp_dir}/{output_name}"
+    original_dialogue_text = payload.dialogue_text
+    dialogue_text = original_dialogue_text
+
+    if payload.natural_mode:
+        first_voice = payload.speakers.get("A")
+        language = "ja-JP"
+        if first_voice is not None:
+            language = infer_language_from_voice(first_voice.voice)
+        dialogue_text = normalize_dialogue_text(dialogue_text, language)
 
     try:
-        await synthesize_dialogue_to_file(
-            dialogue_text=payload.dialogue_text,
-            speaker_count=payload.speaker_count,
-            speaker_settings=_speaker_map_for_dialogue(payload),
-            temp_dir=temp_dir,
-            output_file=output_path,
-        )
+        try:
+            await synthesize_dialogue_to_file(
+                dialogue_text=dialogue_text,
+                speaker_count=payload.speaker_count,
+                speaker_settings=_speaker_map_for_dialogue(payload),
+                temp_dir=temp_dir,
+                output_file=output_path,
+            )
+        except Exception as error:
+            if not (payload.natural_mode and _is_no_audio_error(error)):
+                raise
+            try:
+                await synthesize_dialogue_to_file(
+                    dialogue_text=original_dialogue_text,
+                    speaker_count=payload.speaker_count,
+                    speaker_settings=_speaker_map_for_dialogue(payload),
+                    temp_dir=temp_dir,
+                    output_file=output_path,
+                )
+            except Exception as fallback_error:
+                if _is_no_audio_error(fallback_error):
+                    raise ValueError(_NO_AUDIO_MESSAGE) from fallback_error
+                raise
     except ValueError as error:
         shutil.rmtree(temp_dir, ignore_errors=True)
         raise HTTPException(status_code=400, detail=str(error)) from error

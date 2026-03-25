@@ -6,6 +6,12 @@ Multilingual text-to-speech app with:
 - `ffmpeg` for multi-speaker merge
 - Multi-language voice selection in the web UI
 
+## Voice Notes
+
+- `ja-JP` currently exposes two native Japanese voices (`Nanami`, `Keita`) in this environment.
+- To support 3-4 speaker dialogue in Japanese, curated multilingual voices are included in the Japanese voice menu.
+- Use `GET /tts/voices?language=ja-JP` to see the active voice list at runtime.
+
 ## Requirements
 
 - Python 3.12+

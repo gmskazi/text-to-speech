@@ -165,7 +165,7 @@
     }
 
     select,
-    input,
+    input:not([type="checkbox"]),
     textarea {
       width: 100%;
       box-sizing: border-box;
@@ -179,11 +179,25 @@
     }
 
     select:focus,
-    input:focus,
+    input:not([type="checkbox"]):focus,
     textarea:focus {
       outline: none;
       border-color: var(--brand-accent);
       box-shadow: var(--shadow-focus);
+    }
+
+    .natural-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0;
+      cursor: pointer;
+    }
+
+    .natural-toggle input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+      accent-color: #0a64c8;
     }
 
     textarea {
@@ -328,6 +342,13 @@
       });
     }
 
+    function markRateTouched(fieldName) {
+      const touchedField = document.querySelector(`input[name="${fieldName}"]`);
+      if (touchedField) {
+        touchedField.value = "1";
+      }
+    }
+
     function syncLanguageAcrossModes(languageCode) {
       const singleLanguage = document.getElementById("single_language");
       const dialogueLanguage = document.getElementById("dialogue_language");
@@ -427,8 +448,16 @@
             </div>
             <div>
               <label for="single_rate">Speed Rate (%)</label>
-              <input type="number" id="single_rate" name="single_rate" value="0" min="-80" max="80" step="5">
+              <input type="number" id="single_rate" name="single_rate" value="0" min="-80" max="80" step="5" oninput="markRateTouched('single_rate_touched')">
+              <input type="hidden" name="single_rate_touched" value="0">
             </div>
+          </div>
+          <div class="section">
+            <label class="natural-toggle">
+              <input type="checkbox" name="single_natural_mode" value="on" checked>
+              Natural Mode
+            </label>
+            <p class="hint">Improves conversational rhythm and pacing.</p>
           </div>
           <div class="section">
             <label for="single_text">Input Text</label>
@@ -451,6 +480,7 @@
             <div>
               <label>&nbsp;</label>
               <p class="hint">Speaker voice menus will update based on selected language.</p>
+              <p class="hint">For Japanese, additional multilingual voices are included to support 3-4 speakers.</p>
             </div>
           </div>
           <div class="row">
@@ -463,15 +493,24 @@
                   {% endfor %}
                 </select>
                 <label>Speaker {{ speaker }} Speed Rate (%)</label>
-                <input type="number" name="rate_{{ speaker }}" value="0" min="-80" max="80" step="5">
+                <input type="number" name="rate_{{ speaker }}" value="0" min="-80" max="80" step="5" oninput="markRateTouched('rate_touched_{{ speaker }}')">
+                <input type="hidden" name="rate_touched_{{ speaker }}" value="0">
               </div>
             {% endfor %}
+          </div>
+          <div class="section">
+            <label class="natural-toggle">
+              <input type="checkbox" name="dialogue_natural_mode" value="on" checked>
+              Natural Mode
+            </label>
+            <p class="hint">Improves conversational rhythm and pacing.</p>
           </div>
           <div class="section">
             <label for="dialogue_text">Dialogue Text</label>
             <textarea id="dialogue_text" name="dialogue_text" placeholder="A: すみません。&#10;B: はい。"></textarea>
             <p class="hint">
-              Start each line with a speaker label like A:, B:, C:, or D:.
+              You can start lines with A:, B:, C:, or D:. Unlabeled lines continue
+              with the previous speaker (or default to A for the first line).
             </p>
           </div>
           </div>
@@ -491,7 +530,8 @@
           <li>
             For multiple speakers, choose a language, set each speaker voice/speed
             rate, and format dialogue as lines like <code>A: Hi, How are you?</code>
-            and <code>B: I&#39;m fine, thank you.</code>.
+            and <code>B: I&#39;m fine, thank you.</code>. Unlabeled lines continue with
+            the last speaker.
           </li>
           <li>Click <strong>Generate MP3</strong> to create and download the audio file.</li>
         </ol>

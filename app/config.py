@@ -19,12 +19,11 @@ VOICE_OPTIONS_BY_LANGUAGE: Final[dict[str, dict[str, str]]] = {
     "ja-JP": {
         "Nanami (Female)": "ja-JP-NanamiNeural",
         "Keita (Male)": "ja-JP-KeitaNeural",
-        "Aoi (Female)": "ja-JP-AoiNeural",
-        "Daichi (Male)": "ja-JP-DaichiNeural",
-        "Mayu (Female)": "ja-JP-MayuNeural",
-        "Naoki (Male)": "ja-JP-NaokiNeural",
-        "Shiori (Female)": "ja-JP-ShioriNeural",
-        "Masaru (Male)": "ja-JP-MasaruMultilingualNeural",
+        "Ava (Multilingual)": "en-US-AvaMultilingualNeural",
+        "Andrew (Multilingual)": "en-US-AndrewMultilingualNeural",
+        "Emma (Multilingual)": "en-US-EmmaMultilingualNeural",
+        "Vivienne (Multilingual)": "fr-FR-VivienneMultilingualNeural",
+        "Hyunsu (Multilingual)": "ko-KR-HyunsuMultilingualNeural",
     },
     "en-US": {
         "Jenny (Female)": "en-US-JennyNeural",
