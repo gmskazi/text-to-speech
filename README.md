@@ -1,5 +1,11 @@
 # Text to Speech
 
+[![CI](https://github.com/gmskazi/japanese-text-to-speech/actions/workflows/ci.yml/badge.svg)](https://github.com/gmskazi/japanese-text-to-speech/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.12%2B-blue)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.116%2B-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+
 A Docker-first multilingual text-to-speech app built with FastAPI.
 
 It provides:
