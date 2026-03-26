@@ -127,6 +127,66 @@
       font-weight: 500;
     }
 
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(7, 20, 35, 0.35);
+      z-index: 50;
+      padding: 16px;
+    }
+
+    .loading-card {
+      width: 100%;
+      max-width: 440px;
+      background: #ffffff;
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .loading-title {
+      margin: 0 0 8px;
+      font-weight: 700;
+      color: var(--text-strong);
+    }
+
+    .loading-caption {
+      margin: 0 0 12px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: #dbe6ee;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar {
+      width: 45%;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--brand-accent-dark), var(--brand-accent));
+      animation: indeterminate 1.2s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    @keyframes indeterminate {
+      0% {
+        transform: translateX(-120%);
+      }
+      100% {
+        transform: translateX(260%);
+      }
+    }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -390,9 +450,124 @@
       syncLanguageAcrossModes(activeLanguage);
     }
 
+    function setLoading(isLoading) {
+      const overlay = document.getElementById("loading_overlay");
+      const button = document.getElementById("generate_button");
+      if (overlay) {
+        overlay.style.display = isLoading ? "flex" : "none";
+      }
+      if (button) {
+        button.disabled = isLoading;
+        button.style.opacity = isLoading ? "0.75" : "1";
+        button.style.cursor = isLoading ? "not-allowed" : "pointer";
+      }
+    }
+
+    function showClientError(message) {
+      const errorBox = document.getElementById("client_error");
+      if (!errorBox) {
+        return;
+      }
+      errorBox.textContent = message;
+      errorBox.style.display = "block";
+    }
+
+    function clearClientError() {
+      const errorBox = document.getElementById("client_error");
+      if (!errorBox) {
+        return;
+      }
+      errorBox.textContent = "";
+      errorBox.style.display = "none";
+    }
+
+    function filenameFromDisposition(contentDisposition, fallbackName) {
+      if (!contentDisposition) {
+        return fallbackName;
+      }
+      const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+      if (utf8Match && utf8Match[1]) {
+        return decodeURIComponent(utf8Match[1]);
+      }
+      const plainMatch = contentDisposition.match(/filename="?([^";]+)"?/i);
+      if (plainMatch && plainMatch[1]) {
+        return plainMatch[1];
+      }
+      return fallbackName;
+    }
+
+    async function submitGenerateForm(event) {
+      event.preventDefault();
+      clearClientError();
+      setLoading(true);
+
+      const form = event.currentTarget;
+      const formData = new FormData(form);
+      const fallbackName = formData.get("output_name") || "tts_output.mp3";
+
+      try {
+        const response = await fetch("/generate", {
+          method: "POST",
+          body: formData,
+        });
+
+        const contentType = response.headers.get("content-type") || "";
+        const isAudio = contentType.includes("audio/mpeg");
+
+        if (response.ok && isAudio) {
+          const blob = await response.blob();
+          const disposition = response.headers.get("content-disposition") || "";
+          const filename = filenameFromDisposition(disposition, String(fallbackName));
+
+          const downloadUrl = URL.createObjectURL(blob);
+          const anchor = document.createElement("a");
+          anchor.href = downloadUrl;
+          anchor.download = filename;
+          document.body.appendChild(anchor);
+          anchor.click();
+          anchor.remove();
+          window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1200);
+          return;
+        }
+
+        const bodyText = await response.text();
+        let message = "Failed to generate MP3.";
+
+        if (contentType.includes("text/html")) {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(bodyText, "text/html");
+          const errorNode = doc.querySelector(".error");
+          if (errorNode && errorNode.textContent) {
+            message = errorNode.textContent.trim();
+          }
+        } else if (contentType.includes("application/json")) {
+          try {
+            const data = JSON.parse(bodyText);
+            if (typeof data.detail === "string" && data.detail.trim()) {
+              message = data.detail.trim();
+            }
+          } catch {
+            message = bodyText || message;
+          }
+        } else if (bodyText.trim()) {
+          message = bodyText.trim();
+        }
+
+        showClientError(message);
+      } catch {
+        showClientError("Network error while generating MP3. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
     window.addEventListener("DOMContentLoaded", () => {
       syncLanguageAcrossModes(document.getElementById("single_language").value);
       toggleMode();
+      const generateForm = document.querySelector('form[action="/generate"]');
+      if (generateForm) {
+        generateForm.addEventListener("submit", submitGenerateForm);
+      }
     });
   </script>
 </head>
@@ -411,6 +586,7 @@
       {% if error %}
         <div class="error">{{ error }}</div>
       {% endif %}
+      <div id="client_error" class="error" style="display: none;"></div>
 
       <form method="post" action="/generate">
         <div class="grid">
@@ -520,7 +696,7 @@
           </div>
         </div>
 
-        <button class="btn" type="submit">Generate MP3</button>
+        <button id="generate_button" class="btn" type="submit">Generate MP3</button>
       </form>
 
       <section class="howto" aria-labelledby="howto-title">
@@ -540,6 +716,15 @@
           <li>Click <strong>Generate MP3</strong> to create and download the audio file.</li>
         </ol>
       </section>
+    </div>
+  </div>
+  <div id="loading_overlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Generating audio">
+    <div class="loading-card">
+      <p class="loading-title">Generating MP3...</p>
+      <p class="loading-caption">Please wait while voices are synthesized and merged.</p>
+      <div class="progress-track" aria-hidden="true">
+        <div class="progress-bar"></div>
+      </div>
     </div>
   </div>
 </body>
