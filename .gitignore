@@ -208,3 +208,6 @@ __marimo__/
 
 # music files
 *.mp3
+
+# opencode skills
+.opencode/
