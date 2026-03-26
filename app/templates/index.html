@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Japanese Text to Audio Generator</title>
+  <title>Multilingual Text to Audio Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -12,22 +12,29 @@
   >
   <style>
     :root {
-      --brand-night: #071423;
-      --brand-night-soft: #10263f;
-      --brand-accent: #09b7bc;
-      --brand-accent-dark: #088f94;
-      --surface-main: #f7f5ef;
-      --surface-card: #ffffff;
-      --text-strong: #111111;
-      --text-body: #2b2b2b;
-      --text-muted: #4f4f4f;
-      --error-bg: #fff1f1;
-      --error-border: #f4b8b8;
-      --error-text: #8a1d1d;
-      --border-soft: #d9d6ce;
-      --ring: rgba(9, 183, 188, 0.28);
-      --shadow-soft: 0 18px 40px rgba(7, 20, 35, 0.12);
-      --shadow-focus: 0 0 0 3px var(--ring);
+      --bg: #090f18;
+      --bg-elevated: #101929;
+      --panel: #121d2e;
+      --panel-2: #18253b;
+      --input-bg: #0e1a2c;
+      --input-bg-hover: #102036;
+      --input-bg-focus: #13253f;
+      --border-soft: #24344b;
+      --border-strong: #33587e;
+      --control-border: #355474;
+      --control-border-hover: #42709d;
+      --control-border-focus: #55d8de;
+      --text-strong: #ebf2ff;
+      --text-body: #d0d9e8;
+      --text-muted: #95a4bc;
+      --accent: #13cdd4;
+      --accent-strong: #01aeb5;
+      --error-bg: #2a151a;
+      --error-border: #6f2b38;
+      --error-text: #ffb8c5;
+      --ring: rgba(19, 205, 212, 0.25);
+      --shadow-focus: 0 0 0 2px rgba(9, 22, 36, 0.95), 0 0 0 4px var(--ring);
+      --shadow-soft: 0 24px 40px rgba(0, 0, 0, 0.38);
     }
 
     * {
@@ -37,94 +44,96 @@
     body {
       margin: 0;
       min-height: 100vh;
-      display: flex;
-      width: 100%;
       font-family: "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
       color: var(--text-body);
-      background: var(--surface-main);
+      background:
+        radial-gradient(circle at 20% -20%, rgba(19, 205, 212, 0.18), transparent 35%),
+        radial-gradient(circle at 95% 0%, rgba(1, 174, 181, 0.14), transparent 28%),
+        linear-gradient(180deg, #090f18, #070d16 58%);
     }
 
     .container {
-      width: 100%;
-      max-width: 980px;
-      margin: auto;
-      padding: 0 16px 44px;
+      width: min(1200px, 100% - 32px);
+      margin: 20px auto 44px;
       position: relative;
-      z-index: 3;
+      z-index: 2;
     }
 
-    .card {
-      background: var(--surface-card);
+    .app-shell {
       border: 1px solid var(--border-soft);
       border-radius: 18px;
-      padding: 24px;
+      background: linear-gradient(180deg, rgba(17, 27, 43, 0.96), rgba(10, 16, 27, 0.98));
       box-shadow: var(--shadow-soft);
-      animation: card-enter 360ms ease-out both;
+      overflow: hidden;
     }
 
-    @keyframes card-enter {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 16px;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border-soft);
+      background: linear-gradient(180deg, rgba(19, 35, 56, 0.75), rgba(13, 24, 39, 0.35));
     }
 
-    .section-kicker {
-      margin-top: 0;
-      margin-bottom: 6px;
+    .topbar-title {
+      margin: 0;
       font-family: "Oswald", Impact, "Arial Narrow Bold", sans-serif;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-size: 0.8rem;
-      color: var(--brand-accent-dark);
-    }
-
-    .card h2 {
-      margin: 0 0 8px;
-      font-family: "Oswald", Impact, "Arial Narrow Bold", sans-serif;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
-      line-height: 1.1;
-      font-size: clamp(1.75rem, 3vw, 2.2rem);
+      letter-spacing: 0.04em;
       color: var(--text-strong);
+      font-size: clamp(1.3rem, 2.3vw, 1.75rem);
+      line-height: 1.05;
     }
 
-    .description {
-      margin-top: 0;
-      margin-bottom: 18px;
+    .topbar-subtitle {
+      margin: 5px 0 0;
       color: var(--text-muted);
-      line-height: 1.55;
+      font-size: 0.9rem;
+      max-width: 680px;
     }
 
-    .intro {
-      max-width: 840px;
-      margin: 0 auto 20px;
-      text-align: center;
+    .workspace {
+      padding: 16px;
     }
 
-    .intro .section-kicker {
-      width: 100%;
-      text-align: left;
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: minmax(250px, 300px) minmax(0, 1fr);
+      gap: 14px;
     }
 
-    .intro .description {
-      margin-left: auto;
-      margin-right: auto;
-      max-width: 760px;
+    .panel {
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      padding: 14px;
+      transition: border-color 150ms ease;
+    }
+
+    .panel:focus-within {
+      border-color: rgba(85, 216, 222, 0.45);
+    }
+
+    .panel-title {
+      margin: 0 0 12px;
+      color: var(--text-strong);
+      font-size: 0.92rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-family: "Oswald", Impact, "Arial Narrow Bold", sans-serif;
     }
 
     .error {
-      margin-bottom: 14px;
-      padding: 12px 14px;
+      margin: 0 0 14px;
+      padding: 11px 12px;
       border: 1px solid var(--error-border);
       background: var(--error-bg);
       border-radius: 10px;
       color: var(--error-text);
-      font-weight: 500;
+      font-weight: 600;
+      font-size: 0.92rem;
     }
 
     .loading-overlay {
@@ -133,7 +142,8 @@
       display: none;
       align-items: center;
       justify-content: center;
-      background: rgba(7, 20, 35, 0.35);
+      background: rgba(4, 9, 17, 0.72);
+      backdrop-filter: blur(2px);
       z-index: 50;
       padding: 16px;
     }
@@ -141,8 +151,8 @@
     .loading-card {
       width: 100%;
       max-width: 440px;
-      background: #ffffff;
-      border: 1px solid var(--border-soft);
+      background: linear-gradient(180deg, #142238, #101b2c);
+      border: 1px solid var(--border-strong);
       border-radius: 14px;
       padding: 16px;
       box-shadow: var(--shadow-soft);
@@ -164,7 +174,8 @@
       width: 100%;
       height: 10px;
       border-radius: 999px;
-      background: #dbe6ee;
+      background: #0f1b2c;
+      border: 1px solid #294a68;
       overflow: hidden;
       position: relative;
     }
@@ -173,7 +184,7 @@
       width: 45%;
       height: 100%;
       border-radius: 999px;
-      background: linear-gradient(90deg, var(--brand-accent-dark), var(--brand-accent));
+      background: linear-gradient(90deg, var(--accent-strong), var(--accent));
       animation: indeterminate 1.2s ease-in-out infinite;
       will-change: transform;
     }
@@ -189,42 +200,45 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: 1fr;
       gap: 12px;
     }
 
     .mode-wrapper {
-      margin-top: 16px;
       display: grid;
-      gap: 14px;
+      gap: 12px;
     }
 
     .mode-card {
       border: 1px solid var(--border-soft);
-      border-radius: 14px;
-      padding: 16px;
-      background: linear-gradient(180deg, #ffffff 0%, #fbfaf7 100%);
-      transition: border-color 160ms ease, box-shadow 160ms ease;
+      border-radius: 12px;
+      padding: 12px;
+      background: linear-gradient(180deg, rgba(20, 32, 50, 0.8), rgba(14, 23, 37, 0.85));
+      transition: border-color 150ms ease;
     }
 
-    .mode-card:hover {
-      border-color: #c6c1b5;
+    .mode-card:focus-within {
+      border-color: rgba(85, 216, 222, 0.4);
     }
 
     .mode-title {
-      margin: 0 0 10px;
+      margin: 0;
       font-family: "Oswald", Impact, "Arial Narrow Bold", sans-serif;
       text-transform: uppercase;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.03em;
       color: var(--text-strong);
-      font-size: 1.25rem;
+      font-size: 1.12rem;
+    }
+
+    .section {
+      margin-top: 10px;
     }
 
     label {
       display: block;
       margin-bottom: 6px;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       color: var(--text-strong);
     }
 
@@ -233,21 +247,29 @@
     textarea {
       width: 100%;
       box-sizing: border-box;
-      border: 1px solid #cfc9bb;
-      border-radius: 10px;
-      padding: 10px 11px;
-      font-size: 0.95rem;
+      border: 1px solid var(--control-border);
+      border-radius: 9px;
+      padding: 9px 10px;
+      font-size: 0.93rem;
       color: var(--text-body);
-      background: #ffffff;
-      transition: border-color 140ms ease, box-shadow 140ms ease;
+      background: var(--input-bg);
+      transition: border-color 140ms ease, box-shadow 140ms ease, background 140ms ease;
+    }
+
+    select:hover,
+    input:not([type="checkbox"]):hover,
+    textarea:hover {
+      border-color: var(--control-border-hover);
+      background: var(--input-bg-hover);
     }
 
     select:focus,
     input:not([type="checkbox"]):focus,
     textarea:focus {
       outline: none;
-      border-color: var(--brand-accent);
+      border-color: var(--control-border-focus);
       box-shadow: var(--shadow-focus);
+      background: var(--input-bg-focus);
     }
 
     .natural-toggle {
@@ -261,22 +283,26 @@
     .natural-toggle input[type="checkbox"] {
       width: auto;
       margin: 0;
-      accent-color: #0a64c8;
+      accent-color: var(--accent);
     }
 
     textarea {
-      min-height: 172px;
+      min-height: 168px;
       resize: vertical;
     }
 
-    .section {
-      margin-top: 16px;
+    .hint {
+      margin-top: 6px;
+      margin-bottom: 0;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      line-height: 1.5;
     }
 
     .row {
       display: grid;
       gap: 10px;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .triple-grid {
@@ -286,84 +312,108 @@
     }
 
     .speaker-settings {
-      border: 1px dashed #d5d1c6;
-      background: #ffffff;
+      border: 1px solid #2f4f71;
+      background: rgba(10, 20, 35, 0.75);
       border-radius: 10px;
       padding: 10px;
     }
 
     .btn {
-      margin-top: 20px;
+      margin-top: 14px;
       border: 0;
-      background: linear-gradient(180deg, #06203a 0%, #071423 100%);
-      color: #f8fdff;
-      border-radius: 999px;
-      padding: 12px 20px;
-      min-width: 170px;
-      font-weight: 700;
+      background: linear-gradient(180deg, #16d6de 0%, #00aeb5 100%);
+      color: #072024;
+      border-radius: 10px;
+      width: 100%;
+      padding: 12px 14px;
+      font-weight: 800;
+      font-size: 0.95rem;
       letter-spacing: 0.02em;
       cursor: pointer;
-      transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
-      box-shadow: 0 10px 24px rgba(7, 20, 35, 0.2);
+      transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+      box-shadow: 0 10px 22px rgba(2, 176, 185, 0.22);
     }
 
     .btn:hover {
-      background: linear-gradient(180deg, #0a2d4f 0%, #0f2f4f 100%);
       transform: translateY(-1px);
-      box-shadow: 0 12px 26px rgba(7, 20, 35, 0.24);
+      filter: brightness(1.04);
+      box-shadow: 0 14px 24px rgba(2, 176, 185, 0.28);
     }
 
-    .hint {
-      margin-top: 6px;
-      margin-bottom: 0;
-      color: var(--text-muted);
-      font-size: 0.85rem;
-      line-height: 1.5;
+    .btn:disabled {
+      filter: saturate(0.65);
+      box-shadow: none;
     }
 
     .howto {
-      margin-top: 26px;
-      border-top: 1px solid var(--border-soft);
-      padding-top: 20px;
+      margin-top: 14px;
+      border: 1px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: linear-gradient(180deg, rgba(15, 23, 37, 0.86), rgba(11, 18, 29, 0.9));
     }
 
     .howto-title {
-      margin: 0 0 10px;
+      margin: 0 0 6px;
       font-family: "Oswald", Impact, "Arial Narrow Bold", sans-serif;
       text-transform: uppercase;
       letter-spacing: 0.02em;
       color: var(--text-strong);
-      font-size: 1.35rem;
+      font-size: 1.08rem;
     }
 
     .howto-list {
       margin: 0;
-      padding-left: 22px;
+      padding-left: 18px;
       color: var(--text-body);
-      line-height: 1.6;
+      line-height: 1.45;
+      font-size: 0.88rem;
+    }
+
+    .howto-list code {
+      background: #0e1828;
+      color: #b5f4f7;
+      border: 1px solid #26445f;
+      border-radius: 6px;
+      padding: 1px 5px;
+      font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+      font-size: 0.82rem;
     }
 
     .howto-list li + li {
-      margin-top: 8px;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 980px) {
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .row,
+      .triple-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 760px) {
       .container {
-        margin: 0;
+        width: calc(100% - 16px);
+        margin-top: 8px;
       }
 
-      .card {
-        padding: 18px;
+      .topbar {
+        padding: 14px;
+        align-items: flex-start;
+        flex-direction: column;
       }
 
-      .grid,
-      .triple-grid,
-      .row {
-        grid-template-columns: 1fr;
+      .workspace {
+        padding: 10px;
       }
 
-      .btn {
-        width: 100%;
+      .panel,
+      .howto {
+        padding: 12px;
       }
     }
   </style>
@@ -573,149 +623,152 @@
 </head>
 <body>
   <div class="container">
-    <div class="card">
-      <div class="intro">
-        <p class="section-kicker">Text to speech generation</p>
-        <h2>Turn text into voice audio in seconds</h2>
-        <p class="description">
-          Configure one voice for narration or use multiple voices for dialogue-style
-          output. Export the final result as a downloadable MP3.
-        </p>
-      </div>
-
-      {% if error %}
-        <div class="error">{{ error }}</div>
-      {% endif %}
-      <div id="client_error" class="error" style="display: none;"></div>
-
-      <form method="post" action="/generate">
-        <div class="grid">
-          <div>
-            <label for="speaker_count">Speaker Count</label>
-            <select id="speaker_count" name="speaker_count" onchange="toggleMode()">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-            </select>
-          </div>
-          <div>
-            <label for="output_name">Output Filename</label>
-            <input id="output_name" name="output_name" value="tts_output.mp3">
-            <p class="hint">The file name will be sanitized and saved as an MP3.</p>
-          </div>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <h1 class="topbar-title">Multilingual Text to Audio Studio</h1>
+          <p class="topbar-subtitle">
+            A focused, pro-style workspace for generating polished single-speaker
+            narration and multi-speaker dialogue in one pass.
+          </p>
         </div>
+      </header>
 
-        <div class="mode-wrapper">
-          <div id="single_mode" class="mode-card section">
-            <h3 class="mode-title">Single Speaker Mode</h3>
-          <div class="triple-grid">
-            <div>
-              <label for="single_language">Language</label>
-              <select id="single_language" name="single_language" onchange="handleLanguageChange('single_language')">
-                {% for code, label in languages.items() %}
-                  <option value="{{ code }}" {% if code == single_default_language %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div>
-              <label for="single_voice">Voice</label>
-              <select id="single_voice" name="single_voice">
-                {% for label, value in voices.items() %}
-                  <option value="{{ value }}">{{ label }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div>
-              <label for="single_rate">Speed Rate (%)</label>
-              <input type="number" id="single_rate" name="single_rate" value="0" min="-80" max="80" step="5" oninput="markRateTouched('single_rate_touched')">
-              <input type="hidden" name="single_rate_touched" value="0">
-            </div>
-          </div>
-          <div class="section">
-            <label class="natural-toggle">
-              <input type="checkbox" name="single_natural_mode" value="on" checked>
-              Natural Mode
-            </label>
-            <p class="hint">Improves conversational rhythm and pacing.</p>
-          </div>
-          <div class="section">
-            <label for="single_text">Input Text</label>
-            <textarea id="single_text" name="single_text" placeholder="Paste your text here"></textarea>
-            <p class="hint">Recommended for narration, lessons, and simple prompts.</p>
-          </div>
-          </div>
+      <main class="workspace">
+        {% if error %}
+          <div class="error">{{ error }}</div>
+        {% endif %}
+        <div id="client_error" class="error" style="display: none;"></div>
 
-          <div id="multi_mode" class="mode-card section">
-            <h3 class="mode-title">Multi Speaker Dialogue Mode</h3>
-          <div class="grid">
-            <div>
-              <label for="dialogue_language">Language</label>
-              <select id="dialogue_language" name="dialogue_language" onchange="handleLanguageChange('dialogue_language')">
-                {% for code, label in languages.items() %}
-                  <option value="{{ code }}" {% if code == dialogue_default_language %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div>
-              <label>&nbsp;</label>
-              <p class="hint">Speaker voice menus will update based on selected language.</p>
-              <p class="hint">For Japanese, additional multilingual voices are included to support 3-4 speakers.</p>
-            </div>
-          </div>
-          <div class="row">
-            {% for speaker in ['A', 'B', 'C', 'D'] %}
-              <div class="speaker-settings" data-speaker="{{ speaker }}">
-                <label>Speaker {{ speaker }} Voice</label>
-                <select name="voice_{{ speaker }}">
-                  {% for label, value in voices.items() %}
-                    <option value="{{ value }}">{{ label }}</option>
-                  {% endfor %}
-                </select>
-                <label>Speaker {{ speaker }} Speed Rate (%)</label>
-                <input type="number" name="rate_{{ speaker }}" value="0" min="-80" max="80" step="5" oninput="markRateTouched('rate_touched_{{ speaker }}')">
-                <input type="hidden" name="rate_touched_{{ speaker }}" value="0">
+        <form method="post" action="/generate">
+          <div class="workspace-grid">
+            <section class="panel" aria-labelledby="settings-title">
+              <h2 id="settings-title" class="panel-title">Session Controls</h2>
+              <div class="grid">
+                <div>
+                  <label for="speaker_count">Speaker Count</label>
+                  <select id="speaker_count" name="speaker_count" onchange="toggleMode()">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="output_name">Output Filename</label>
+                  <input id="output_name" name="output_name" value="tts_output.mp3">
+                  <p class="hint">Filename is sanitized and always exported as MP3.</p>
+                </div>
               </div>
-            {% endfor %}
-          </div>
-          <div class="section">
-            <label class="natural-toggle">
-              <input type="checkbox" name="dialogue_natural_mode" value="on" checked>
-              Natural Mode
-            </label>
-            <p class="hint">Improves conversational rhythm and pacing.</p>
-          </div>
-          <div class="section">
-            <label for="dialogue_text">Dialogue Text</label>
-            <textarea id="dialogue_text" name="dialogue_text" placeholder="A: すみません。&#10;B: はい。"></textarea>
-            <p class="hint">
-              You can start lines with A:, B:, C:, or D:. Unlabeled lines continue
-              with the previous speaker (or default to A for the first line).
-            </p>
-          </div>
-          </div>
-        </div>
+              <button id="generate_button" class="btn" type="submit">Generate MP3</button>
+            </section>
 
-        <button id="generate_button" class="btn" type="submit">Generate MP3</button>
-      </form>
+            <section class="panel" aria-labelledby="editor-title">
+              <h2 id="editor-title" class="panel-title">Voice Editor</h2>
+              <div class="mode-wrapper">
+                <div id="single_mode" class="mode-card section">
+                  <h3 class="mode-title">Single Speaker Mode</h3>
+                  <div class="triple-grid section">
+                    <div>
+                      <label for="single_language">Language</label>
+                      <select id="single_language" name="single_language" onchange="handleLanguageChange('single_language')">
+                        {% for code, label in languages.items() %}
+                          <option value="{{ code }}" {% if code == single_default_language %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <div>
+                      <label for="single_voice">Voice</label>
+                      <select id="single_voice" name="single_voice">
+                        {% for label, value in voices.items() %}
+                          <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <div>
+                      <label for="single_rate">Speed Rate (%)</label>
+                      <input type="number" id="single_rate" name="single_rate" value="0" min="-80" max="80" step="5" oninput="markRateTouched('single_rate_touched')">
+                      <input type="hidden" name="single_rate_touched" value="0">
+                    </div>
+                  </div>
+                  <div class="section">
+                    <label class="natural-toggle">
+                      <input type="checkbox" name="single_natural_mode" value="on" checked>
+                      Natural Mode
+                    </label>
+                    <p class="hint">Adds subtle pacing improvements for natural playback.</p>
+                  </div>
+                  <div class="section">
+                    <label for="single_text">Input Text</label>
+                    <textarea id="single_text" name="single_text" placeholder="Paste your text here"></textarea>
+                    <p class="hint">Best for narration, demos, quick clips, and voice drafts.</p>
+                  </div>
+                </div>
 
-      <section class="howto" aria-labelledby="howto-title">
-        <h3 id="howto-title" class="howto-title">How to use this tool</h3>
-        <ol class="howto-list">
-          <li>Select the number of speakers and set your output filename.</li>
-          <li>
-            For one speaker, choose a language, voice, and speed rate, then paste your
-            text in the single text box.
-          </li>
-          <li>
-            For multiple speakers, choose a language, set each speaker voice/speed
-            rate, and format dialogue as lines like <code>A: Hi, How are you?</code>
-            and <code>B: I&#39;m fine, thank you.</code>. Unlabeled lines continue with
-            the last speaker.
-          </li>
-          <li>Click <strong>Generate MP3</strong> to create and download the audio file.</li>
-        </ol>
-      </section>
+                <div id="multi_mode" class="mode-card section">
+                  <h3 class="mode-title">Multi Speaker Dialogue Mode</h3>
+                  <div class="grid section">
+                    <div>
+                      <label for="dialogue_language">Language</label>
+                      <select id="dialogue_language" name="dialogue_language" onchange="handleLanguageChange('dialogue_language')">
+                        {% for code, label in languages.items() %}
+                          <option value="{{ code }}" {% if code == dialogue_default_language %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <div>
+                      <p class="hint">Speaker voice menus auto-sync with language selection.</p>
+                      <p class="hint">Japanese includes multilingual fallbacks for 3-4 speakers.</p>
+                    </div>
+                  </div>
+                  <div class="row section">
+                    {% for speaker in ['A', 'B', 'C', 'D'] %}
+                      <div class="speaker-settings" data-speaker="{{ speaker }}">
+                        <label>Speaker {{ speaker }} Voice</label>
+                        <select name="voice_{{ speaker }}">
+                          {% for label, value in voices.items() %}
+                            <option value="{{ value }}">{{ label }}</option>
+                          {% endfor %}
+                        </select>
+                        <label>Speaker {{ speaker }} Speed Rate (%)</label>
+                        <input type="number" name="rate_{{ speaker }}" value="0" min="-80" max="80" step="5" oninput="markRateTouched('rate_touched_{{ speaker }}')">
+                        <input type="hidden" name="rate_touched_{{ speaker }}" value="0">
+                      </div>
+                    {% endfor %}
+                  </div>
+                  <div class="section">
+                    <label class="natural-toggle">
+                      <input type="checkbox" name="dialogue_natural_mode" value="on" checked>
+                      Natural Mode
+                    </label>
+                    <p class="hint">Balances rhythm and transition pacing between speakers.</p>
+                  </div>
+                  <div class="section">
+                    <label for="dialogue_text">Dialogue Text</label>
+                    <textarea id="dialogue_text" name="dialogue_text" placeholder="A: すみません。&#10;B: はい。"></textarea>
+                    <p class="hint">
+                      Start lines with A:, B:, C:, or D:. Unlabeled lines continue with
+                      the previous speaker (or default to A for the first line).
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </form>
+
+        <section class="howto" aria-labelledby="howto-title">
+          <h3 id="howto-title" class="howto-title">How to Use the Web App</h3>
+          <ol class="howto-list">
+            <li>Open <code>/</code>.</li>
+            <li>Set <strong>Speaker Count</strong> (<code>1</code> to <code>4</code>).</li>
+            <li>Set <strong>Output Filename</strong> (auto-sanitized, <code>.mp3</code> enforced).</li>
+            <li>Single speaker: choose language/voice/rate, paste text, and set Natural Mode as needed.</li>
+            <li>Dialogue mode: choose language, configure each speaker voice/rate, then enter dialogue lines.</li>
+            <li>Click <strong>Generate MP3</strong> to download.</li>
+          </ol>
+        </section>
+      </main>
     </div>
   </div>
   <div id="loading_overlay" class="loading-overlay" role="status" aria-live="polite" aria-label="Generating audio">
