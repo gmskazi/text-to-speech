@@ -1,4 +1,4 @@
-# Text to Speech
+# Text to Speech App
 
 [![CI](https://github.com/gmskazi/japanese-text-to-speech/actions/workflows/ci.yml/badge.svg)](https://github.com/gmskazi/japanese-text-to-speech/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.12%2B-blue)
@@ -6,7 +6,9 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.116%2B-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 
-A Docker-first multilingual text-to-speech app built with FastAPI.
+![App Screenshot](images/ttsapp.webp)
+
+A multilingual text-to-speech app built with FastAPI.
 
 It provides:
 
@@ -14,6 +16,8 @@ It provides:
 - A REST API for programmatic use
 - Single-speaker and multi-speaker dialogue generation
 - MP3 output with optional async job-based workflows
+
+**Note: This is for local use only.**
 
 ## Table of Contents
 
@@ -101,7 +105,7 @@ For local non-Docker usage:
 ### 1) Clone
 
 ```bash
-git clone https://github.com/gmskazi/japanese-text-to-speech.git
+git clone https://github.com/gmskazi/-text-to-speech.git
 cd japanese-text-to-speech
 ```
 
@@ -294,29 +298,7 @@ When enabled, the app applies conservative text normalization and retries once w
 
 ## Local Development (without Docker)
 
-### 1) Create and activate venv
-
-```bash
-python3.12 -m venv .venv
-source .venv/bin/activate
-```
-
-### 2) Install dependencies
-
-```bash
-pip install -e .
-pip install -e .[dev]
-```
-
-### 3) Run app
-
-```bash
-uvicorn app.main:app --reload
-```
-
-### 4) Optional: use `mise`
-
-If you use `mise`, this project provides:
+Use `mise` for the environment creation and tool installation.
 
 ```bash
 mise install
@@ -342,79 +324,6 @@ Targeted runs:
 pytest -q tests/test_api.py
 pytest -q tests/test_text_utils.py
 ```
-
-## Deployment (Docker-first)
-
-### Recommended baseline
-
-1. Build and push image to your registry.
-2. Run container with a process manager/orchestrator.
-3. Expose port `8000` behind a reverse proxy (Nginx/Traefik/Cloud LB).
-4. Terminate TLS at the proxy/load balancer.
-5. Add health checks to `GET /health`.
-
-### Build
-
-```bash
-docker build -t your-registry/multilingual-tts:latest .
-```
-
-### Run
-
-```bash
-docker run -d \
-  --name multilingual-tts \
-  -p 8000:8000 \
-  --restart unless-stopped \
-  your-registry/multilingual-tts:latest
-```
-
-### Production notes
-
-- `ffmpeg` is required for dialogue merge (already installed in `Dockerfile`).
-- Generated audio files are temporary and cleaned after responses/downloads.
-- Job state is in-memory; if the container restarts, job history is lost.
-
-## Troubleshooting
-
-### `ImportError: jinja2 must be installed to use Jinja2Templates`
-
-Cause: missing template dependency in environment.
-
-Fix:
-
-```bash
-pip install -e .
-```
-
-(`jinja2` is declared in project dependencies.)
-
-### `ffmpeg is not installed or not in PATH`
-
-Cause: system dependency missing.
-
-Fix (local): install ffmpeg on host and retry.
-
-Fix (Docker): use the provided `Dockerfile` image.
-
-### `No audio could be generated`
-
-Common causes:
-
-- input is punctuation-only
-- problematic voice/text combination
-
-Try:
-
-- adding real words/numbers to input
-- switching voice
-- enabling/disabling Natural Mode
-
-### `409 Job result is not ready`
-
-The job is still queued/running.
-
-Fix: poll `GET /jobs/{job_id}` until status is `done`, then download.
 
 ## Current Limitations
 
