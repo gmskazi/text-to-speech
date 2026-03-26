@@ -112,13 +112,13 @@ cd japanese-text-to-speech
 ### 2) Build Image
 
 ```bash
-docker build -t multilingual-tts .
+docker build -t tts .
 ```
 
 ### 3) Run Container
 
 ```bash
-docker run --rm -p 8000:8000 multilingual-tts
+docker run --rm -p 8000:8000 tts
 ```
 
 ### 4) Open App
