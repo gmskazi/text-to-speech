@@ -25,6 +25,8 @@ Multilingual text-to-speech app built with FastAPI.
 - [Prerequisites](#prerequisites)
 - [Quick Start (Docker)](#quick-start-docker)
 - [Local Development (mise)](#local-development-mise)
+- [Local Deploy (Compose)](#local-deploy-compose)
+- [Server Setup (Ansible)](#server-setup-ansible)
 - [Checks and Linting](#checks-and-linting)
 - [How to Use the Web App](#how-to-use-the-web-app)
 - [API Usage](#api-usage)
@@ -121,6 +123,52 @@ mise run run
 ```
 
 This uses the Python version and venv setup from `.mise.toml`.
+
+## Local Deploy (Compose)
+
+Build local deploy image tags:
+
+```bash
+mise run build-local-image
+```
+
+Run local deploy flow
+(pull latest ref, build, compose up, health check, rollback on failure):
+
+```bash
+mise run deploy-local
+```
+
+Compose uses `docker-compose.yml` with image tag `deploy-current` by default.
+The build process also keeps `deploy-previous` for rollback.
+
+Make wrappers:
+
+```bash
+make build-local-image
+make deploy-local
+```
+
+## Server Setup (Ansible)
+
+Ansible files are in `infra/ansible/`.
+
+What it automates:
+
+- install Docker + Compose plugin
+- clone/update this repository on the server
+- install `tts-deploy.service` and `tts-deploy.timer`
+- run `scripts/deploy_local.sh` on schedule
+
+Quick start:
+
+```bash
+cd infra/ansible
+cp inventory.ini.example inventory.ini
+ansible-playbook playbook.yml
+```
+
+See `infra/ansible/README.md` for variables and operational commands.
 
 ## Checks and Linting
 

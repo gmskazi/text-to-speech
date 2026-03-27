@@ -1,0 +1,19 @@
+services:
+  app:
+    image: "${IMAGE_REPO:-text-to-speech}:${APP_IMAGE_TAG:-deploy-current}"
+    container_name: "${APP_CONTAINER_NAME:-text-to-speech-app}"
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT_BIND:-127.0.0.1:8000}:8000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).read()",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

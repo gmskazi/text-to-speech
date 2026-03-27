@@ -25,3 +25,11 @@ run = "python -m compileall app tests && ruff check . && mypy app tests && pytes
 [tasks.check-docs]
 description = "Run docs lint checks locally"
 run = "npx --yes markdownlint-cli2 \"docs/**/*.md\" \"README.md\""
+
+[tasks.build-local-image]
+description = "Build local deploy image and keep rollback tag"
+run = "bash scripts/build_local_image.sh"
+
+[tasks.deploy-local]
+description = "Build and deploy locally with health check and rollback"
+run = "bash scripts/deploy_local.sh"

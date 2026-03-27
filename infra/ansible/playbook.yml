@@ -1,0 +1,92 @@
+---
+- name: Configure TTS deployment server
+  hosts: tts_servers
+  become: true
+
+  tasks:
+    - name: Install system packages
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - git
+          - docker.io
+          - docker-compose-plugin
+        state: present
+        update_cache: true
+
+    - name: Ensure docker service is enabled
+      ansible.builtin.systemd:
+        name: docker
+        enabled: true
+        state: started
+
+    - name: Add deploy user to docker group
+      ansible.builtin.user:
+        name: "{{ tts_service_user }}"
+        groups: docker
+        append: true
+      when: tts_service_user != "root"
+
+    - name: Ensure app directory exists
+      ansible.builtin.file:
+        path: "{{ tts_app_root }}"
+        state: directory
+        owner: "{{ tts_service_user }}"
+        group: "{{ tts_service_group }}"
+        mode: "0755"
+
+    - name: Check out repository
+      ansible.builtin.git:
+        repo: "{{ tts_repo_url }}"
+        dest: "{{ tts_app_root }}"
+        version: "{{ tts_repo_ref }}"
+        update: true
+      become_user: "{{ tts_service_user }}"
+
+    - name: Ensure deploy scripts are executable
+      ansible.builtin.file:
+        path: "{{ tts_app_root }}/{{ item }}"
+        mode: "0755"
+      loop:
+        - scripts/build_local_image.sh
+        - scripts/deploy_local.sh
+
+    - name: Render deploy environment file
+      ansible.builtin.template:
+        src: templates/tts-deploy.env.j2
+        dest: /etc/default/tts-deploy
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Render systemd deploy service
+      ansible.builtin.template:
+        src: templates/tts-deploy.service.j2
+        dest: /etc/systemd/system/tts-deploy.service
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Render systemd deploy timer
+      ansible.builtin.template:
+        src: templates/tts-deploy.timer.j2
+        dest: /etc/systemd/system/tts-deploy.timer
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Reload systemd daemon
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Enable and start deploy timer
+      ansible.builtin.systemd:
+        name: tts-deploy.timer
+        enabled: "{{ tts_enable_timer }}"
+        state: "{{ 'started' if tts_enable_timer else 'stopped' }}"
+
+    - name: Run initial deploy once
+      ansible.builtin.systemd:
+        name: tts-deploy.service
+        state: started
+      when: tts_run_initial_deploy

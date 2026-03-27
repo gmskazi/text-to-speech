@@ -1,0 +1,24 @@
+---
+tts_repo_url: "https://github.com/gmskazi/japanese-text-to-speech.git"
+tts_repo_ref: "main"
+tts_app_root: "/opt/japanese-text-to-speech"
+
+tts_service_user: "{{ ansible_user }}"
+tts_service_group: "{{ ansible_user }}"
+
+tts_image_repo: "text-to-speech"
+tts_current_tag: "deploy-current"
+tts_previous_tag: "deploy-previous"
+tts_deploy_tag_prefix: "deploy"
+
+tts_compose_file: "docker-compose.yml"
+tts_app_port_bind: "127.0.0.1:8000"
+tts_health_url: "http://127.0.0.1:8000/health"
+tts_health_timeout_seconds: 120
+tts_auto_pull: true
+tts_git_remote: "origin"
+tts_deploy_ref: "{{ tts_repo_ref }}"
+
+tts_deploy_on_calendar: "*:0/15"
+tts_enable_timer: true
+tts_run_initial_deploy: false

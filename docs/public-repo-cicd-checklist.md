@@ -26,20 +26,20 @@ Use this checklist to track the new deployment model:
 ## 3) Local Container Build
 
 - [x] Build container in CI as smoke check (no push)
-- [ ] Build container on local server for deployment
-- [ ] Tag local deploy image consistently (for rollback)
-- [ ] Keep previous local image/tag available for rollback
+- [x] Build container on local server for deployment
+- [x] Tag local deploy image consistently (for rollback)
+- [x] Keep previous local image/tag available for rollback
 
 ## 4) Local Server Build-and-Deploy
 
-- [ ] Install Docker + Compose on server
-- [ ] Add deploy script that:
-  - [ ] pulls latest code (or target ref)
-  - [ ] builds image locally
-  - [ ] runs `docker compose up -d`
-  - [ ] verifies `/health`
-  - [ ] rolls back on failure
-- [ ] Schedule script via systemd timer (or cron)
+- [x] Install Docker + Compose on server (automated in Ansible playbook)
+- [x] Add deploy script that:
+  - [x] pulls latest code (or target ref)
+  - [x] builds image locally
+  - [x] runs `docker compose up -d`
+  - [x] verifies `/health`
+  - [x] rolls back on failure
+- [x] Schedule script via systemd timer (or cron)
 
 ## 5) Cloudflare Tunnel Runtime
 

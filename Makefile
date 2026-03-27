@@ -1,4 +1,4 @@
-.PHONY: all check check-docs
+.PHONY: all check check-docs build-local-image deploy-local
 
 all: check check-docs
 
@@ -7,3 +7,9 @@ check:
 
 check-docs:
 	mise run check-docs
+
+build-local-image:
+	mise run build-local-image
+
+deploy-local:
+	mise run deploy-local
