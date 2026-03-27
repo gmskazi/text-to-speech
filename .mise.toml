@@ -8,7 +8,20 @@ _.python.venv = { path = ".venv", create = true, uv_create_args = ["--seed"] }
 description = "Install dependencies"
 run = "pip install -e ."
 
+[tasks.install-dev]
+description = "Install development dependencies"
+run = "pip install -e .[dev] && pip install pip-audit"
+
 [tasks.run]
 description = "Run the FastAPI app"
 depends = ["install"]
 run = "uvicorn app.main:app --reload"
+
+[tasks.check]
+description = "Run CI checks locally (revisit CVE-2026-4539 ignore when fixed)"
+depends = ["install-dev"]
+run = "python -m compileall app tests && ruff check . && mypy app tests && pytest -q && pip-audit --ignore-vuln CVE-2026-4539 && docker build -t text-to-speech-ci ."
+
+[tasks.check-docs]
+description = "Run docs lint checks locally"
+run = "npx --yes markdownlint-cli2 \"docs/**/*.md\" \"README.md\""

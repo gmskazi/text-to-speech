@@ -158,6 +158,11 @@ pytest -q -k parse_dialogue
 - Prefer adding tests around pure helpers first (`parse_dialogue`, `to_rate_str`).
 - Re-run the smallest relevant check before finishing (single-file compile/lint/test).
 
+## Documentation Maintenance
+- Keep `README.md` in sync with code and workflow changes.
+- When commands, tooling, CI behavior, or deployment flow change, update the related README sections in the same task.
+- If new scripts/tasks/workflows are added (for example in `.mise.toml`, `Makefile`, or `.github/workflows/`), reflect the new usage and examples in `README.md`.
+
 ## Cursor / Copilot Rules
 - `.cursor/rules/`: not found.
 - `.cursorrules`: not found.

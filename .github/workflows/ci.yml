@@ -70,7 +70,9 @@ jobs:
         run: pytest -q
 
       - name: Dependency audit
-        run: pip-audit
+        # Temporary ignore: CVE-2026-4539 (pygments) has no fixed release yet.
+        # Revisit regularly and remove this ignore as soon as an upstream fix ships.
+        run: pip-audit --ignore-vuln CVE-2026-4539
 
       - name: Docker build smoke test
         if: steps.changes.outputs.docker == 'true'

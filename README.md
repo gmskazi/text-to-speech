@@ -8,16 +8,14 @@
 
 ![App Screenshot](images/ttsapp.webp)
 
-A multilingual text-to-speech app built with FastAPI.
+Multilingual text-to-speech app built with FastAPI.
 
-It provides:
-
-- A browser UI for quick audio generation
-- A REST API for programmatic use
+- Browser UI for quick audio generation
+- REST API for programmatic use
 - Single-speaker and multi-speaker dialogue generation
 - MP3 output with optional async job-based workflows
 
-**Note: This is for local use only.**
+**Note: This project is currently optimized for personal/local use.**
 
 ## Table of Contents
 
@@ -25,23 +23,22 @@ It provides:
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
 - [Prerequisites](#prerequisites)
-- [Quick Start (Docker-first)](#quick-start-docker-first)
+- [Quick Start (Docker)](#quick-start-docker)
+- [Local Development (mise)](#local-development-mise)
+- [Checks and Linting](#checks-and-linting)
 - [How to Use the Web App](#how-to-use-the-web-app)
 - [API Usage](#api-usage)
-- [Natural Mode and Dialogue Parsing Rules](#natural-mode-and-dialogue-parsing-rules)
-- [Voice Catalog Notes](#voice-catalog-notes)
-- [Local Development (without Docker)](#local-development-without-docker)
-- [Quality Checks](#quality-checks)
-- [Deployment (Docker-first)](#deployment-docker-first)
-- [Troubleshooting](#troubleshooting)
+- [Natural Mode and Dialogue Rules](#natural-mode-and-dialogue-rules)
+- [CI and Security Notes](#ci-and-security-notes)
+- [Deployment Plan](#deployment-plan)
 - [Current Limitations](#current-limitations)
 
 ## Key Features
 
 - **Single-speaker TTS**: Generate one MP3 from plain text.
-- **Multi-speaker dialogue**: Merge speaker turns into one MP3 using `ffmpeg`.
+- **Multi-speaker dialogue**: Merge speaker turns into one MP3 with `ffmpeg`.
 - **Language-aware voice menus**: Query or select curated voices by language.
-- **Natural Mode**: Optional normalization and retry behavior for more natural speech output.
+- **Natural mode**: Optional normalization and retry behavior.
 - **Sync + async API**:
   - immediate generation endpoints
   - job-based endpoints with polling and download
@@ -51,13 +48,13 @@ It provides:
 
 - **Language**: Python 3.12+
 - **Web framework**: FastAPI
-- **Template engine**: Jinja2 (for web UI)
-- **Speech synthesis**: edge-tts
-- **Audio merge**: ffmpeg (system binary)
+- **Template engine**: Jinja2
+- **Speech synthesis**: `edge-tts`
+- **Audio merge**: `ffmpeg` (system binary)
 - **ASGI server**: uvicorn
 - **Validation/models**: Pydantic
-- **Lint/Type/Test**: Ruff, mypy, pytest
-- **Containerization**: Docker
+- **Lint/Type/Test**: Ruff, mypy, pytest, pip-audit
+- **Task runner**: mise (optional Makefile wrapper)
 - **CI**: GitHub Actions (`.github/workflows/ci.yml`)
 
 ## Project Structure
@@ -66,104 +63,116 @@ It provides:
 .
 ├── app/
 │   ├── api/
-│   │   └── routes_tts.py          # REST API endpoints
+│   │   └── routes_tts.py
 │   ├── models/
-│   │   └── tts_models.py          # Pydantic request/response models
+│   │   └── tts_models.py
 │   ├── services/
-│   │   ├── tts_service.py         # TTS orchestration
-│   │   ├── audio_merge.py         # ffmpeg concat merge
-│   │   └── job_store.py           # in-memory async job store
+│   │   ├── tts_service.py
+│   │   ├── audio_merge.py
+│   │   └── job_store.py
 │   ├── templates/
-│   │   └── index.html             # web UI form
+│   │   └── index.html
 │   ├── utils/
-│   │   ├── text_utils.py          # parse/normalize/rate helpers
-│   │   └── file_utils.py          # filename sanitization
-│   ├── config.py                  # language + voice catalogs
-│   └── main.py                    # FastAPI app + web routes
+│   │   ├── text_utils.py
+│   │   └── file_utils.py
+│   ├── config.py
+│   └── main.py
+├── docs/
+│   └── public-repo-cicd-checklist.md
 ├── tests/
 │   ├── test_api.py
 │   └── test_text_utils.py
+├── .github/workflows/
+│   ├── ci.yml
+│   └── docs-check.yml
 ├── Dockerfile
+├── Makefile
 ├── pyproject.toml
-├── .mise.toml
-└── .github/workflows/ci.yml
+└── .mise.toml
 ```
 
 ## Prerequisites
 
-For Docker-first usage:
-
-- Docker 24+
-
-For local non-Docker usage:
-
 - Python 3.12+
 - `ffmpeg` on PATH
+- Docker (optional for container runs)
+- mise (optional, for task execution)
 
-## Quick Start (Docker-First)
-
-### 1) Clone
-
-```bash
-git clone https://github.com/gmskazi/-text-to-speech.git
-cd japanese-text-to-speech
-```
-
-### 2) Build Image
+## Quick Start (Docker)
 
 ```bash
+git clone https://github.com/gmskazi/text-to-speech.git
+cd text-to-speech
 docker build -t tts .
-```
-
-### 3) Run Container
-
-```bash
 docker run --rm -p 8000:8000 tts
 ```
 
-### 4) Open App
+Open:
 
 - Web UI: `http://localhost:8000/`
 - API docs: `http://localhost:8000/docs`
-- Health check: `http://localhost:8000/health`
+- Health: `http://localhost:8000/health`
+
+## Local Development (mise)
+
+```bash
+mise install
+mise run run
+```
+
+This uses the Python version and venv setup from `.mise.toml`.
+
+## Checks and Linting
+
+Using mise:
+
+```bash
+mise run check
+mise run check-docs
+```
+
+Using Makefile wrappers:
+
+```bash
+make
+make all
+make check
+make check-docs
+```
+
+`make` and `make all` run both check targets sequentially.
+
+`check` includes compile, lint, type checks, tests, dependency audit,
+and Docker build smoke test.
 
 ## How to Use the Web App
 
 1. Open `/`.
 2. Set **Speaker Count** (`1` to `4`).
-3. Set **Output Filename** (auto-sanitized, `.mp3` enforced).
-4. For single speaker:
-   - Choose language, voice, and speed rate.
+3. Set **Output Filename** (`.mp3` enforced and sanitized).
+4. For single-speaker mode:
+   - Choose language, voice, and speed.
    - Paste text.
-   - Keep Natural Mode on/off as desired.
 5. For dialogue mode:
    - Choose language.
    - Configure each speaker voice/rate.
    - Enter dialogue lines.
-6. Click **Generate MP3** to download.
+6. Click **Generate MP3**.
 
-### Dialogue Input Examples
+Example dialogue input:
 
 ```text
 A: こんにちは。
 B: はい、どうしましたか？
 ```
 
-Unlabeled lines are allowed:
-
-```text
-A: Good morning.
-How was your weekend?
-B: Pretty good.
-```
-
-In this case, the unlabeled line continues with the previous speaker (`A`).
+Unlabeled lines continue with the previous speaker.
 
 ## API Usage
 
 Base URL (local): `http://localhost:8000`
 
-### Endpoints
+Endpoints:
 
 - `GET /health`
 - `GET /tts/voices`
@@ -174,7 +183,7 @@ Base URL (local): `http://localhost:8000`
 - `GET /jobs/{job_id}`
 - `GET /jobs/{job_id}/download`
 
-### 1) Health
+Health check example:
 
 ```bash
 curl -s http://localhost:8000/health
@@ -183,157 +192,60 @@ curl -s http://localhost:8000/health
 Expected response:
 
 ```json
-{ "status": "ok" }
+{"status":"ok"}
 ```
 
-### 2) List voices by language
+## Natural Mode and Dialogue Rules
 
-```bash
-curl -s "http://localhost:8000/tts/voices?language=ja-JP"
-```
+Natural mode behavior:
 
-### 3) Single-speaker generation
+- Web UI default: ON
+- API default: OFF (unless `natural_mode: true` is passed)
+- On no-audio conditions, the app retries with original text.
 
-```bash
-curl -X POST "http://localhost:8000/tts/single" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "こんにちは。今日はいい天気ですね。",
-    "voice": "ja-JP-NanamiNeural",
-    "rate": 0,
-    "output_name": "single.mp3",
-    "natural_mode": true
-  }' \
-  --output single.mp3
-```
+Dialogue parsing rules:
 
-### 4) Dialogue generation
+- Speaker labels: `A`, `B`, `C`, `D` (up to `speaker_count`)
+- `:` and `：` are accepted
+- Unlabeled lines continue previous speaker
+- First unlabeled line defaults to `A`
+- Empty lines are ignored
 
-```bash
-curl -X POST "http://localhost:8000/tts/dialogue" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "speaker_count": 2,
-    "dialogue_text": "A: こんにちは。\nB: はい。",
-    "speakers": {
-      "A": {"voice": "ja-JP-NanamiNeural", "rate": 0},
-      "B": {"voice": "ja-JP-KeitaNeural", "rate": 0}
-    },
-    "output_name": "dialogue.mp3",
-    "natural_mode": true
-  }' \
-  --output dialogue.mp3
-```
+## CI and Security Notes
 
-### 5) Async job workflow (single)
+Current CI behavior:
 
-Create job:
+- Runs on GitHub-hosted runner (`ubuntu-latest`)
+- Path-filtered triggers (runs only on relevant code/workflow changes)
+- Includes:
+  - gitleaks
+  - ruff
+  - mypy
+  - pytest
+  - pip-audit
+  - Docker build smoke test (conditional on Docker-related changes)
 
-```bash
-curl -X POST "http://localhost:8000/tts/single/jobs" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "This is an async single-speaker request.",
-    "voice": "en-US-JennyNeural",
-    "rate": 0,
-    "output_name": "job-single.mp3"
-  }'
-```
+Dependency audit note:
 
-Check status:
+- `CVE-2026-4539` for `pygments` is temporarily ignored in CI and
+  local checks because no upstream fix version is published yet.
+- Revisit and remove the ignore once a fixed release is available.
 
-```bash
-curl -s "http://localhost:8000/jobs/<job_id>"
-```
+## Deployment Plan
 
-Download result when status is `done`:
+For the current public-repo-safe deployment checklist, see:
 
-```bash
-curl -L "http://localhost:8000/jobs/<job_id>/download" --output job-single.mp3
-```
+- `docs/public-repo-cicd-checklist.md`
 
-### 6) Async job workflow (dialogue)
+Current direction:
 
-Create job:
-
-```bash
-curl -X POST "http://localhost:8000/tts/dialogue/jobs" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "speaker_count": 3,
-    "dialogue_text": "A: Hello\nB: Hi\nC: Good to see you",
-    "speakers": {
-      "A": {"voice": "en-US-JennyNeural", "rate": 0},
-      "B": {"voice": "en-US-GuyNeural", "rate": 0},
-      "C": {"voice": "en-US-AriaNeural", "rate": 0}
-    },
-    "output_name": "job-dialogue.mp3"
-  }'
-```
-
-Then poll `/jobs/<job_id>` and download from `/jobs/<job_id>/download`.
-
-## Natural Mode and Dialogue Parsing Rules
-
-### Natural Mode
-
-- **Web UI default**: ON
-- **API default**: OFF (unless `natural_mode: true` is passed)
-
-When enabled, the app applies conservative text normalization and retries once with original text if a no-audio condition occurs.
-
-### Dialogue parsing rules
-
-- Valid explicit speaker labels are `A`, `B`, `C`, `D` (up to `speaker_count`).
-- Both `:` and `：` are accepted after labels.
-- Unlabeled lines continue with the previous speaker.
-- If the first non-empty line is unlabeled, it defaults to speaker `A`.
-- Empty lines are ignored.
-
-## Voice Catalog Notes
-
-- Voices are curated in `app/config.py` by language.
-- Query runtime list via `GET /tts/voices?language=<code>`.
-- In this environment, `ja-JP` includes two native voices and curated multilingual fallbacks to support 3-4 speaker scenarios.
-
-## Local Development (without Docker)
-
-Use `mise` for the environment creation and tool installation.
-
-```bash
-mise install
-mise run run
-```
-
-`mise` handles Python tool version and virtualenv wiring from `.mise.toml`.
-
-## Quality Checks
-
-Run all core checks locally:
-
-```bash
-python -m compileall app tests
-ruff check .
-mypy app tests
-pytest -q
-```
-
-Targeted runs:
-
-```bash
-pytest -q tests/test_api.py
-pytest -q tests/test_text_utils.py
-```
+- keep CI on GitHub-hosted runners
+- avoid self-hosted GitHub runners for public PR risk
+- use local server build-and-deploy with Cloudflare Tunnel access
 
 ## Current Limitations
 
-- Async job storage is in-memory only (`app/services/job_store.py`), not persistent across restarts.
-- No built-in auth/rate-limiting for public API exposure.
-- No object storage backend for long-lived audio artifacts.
-
-For production-scale usage, consider adding:
-
-- persistent job backend (Redis/Postgres)
-- durable artifact storage (S3/GCS)
-- API auth + request throttling
-- structured logging and monitoring.
+- Async job storage is in-memory (`app/services/job_store.py`)
+  and is not persistent across restarts.
+- No built-in auth/rate limiting for public API exposure.
+- No durable object storage backend for long-lived artifacts.
