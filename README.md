@@ -1,6 +1,6 @@
 # Text to Speech App
 
-[![CI](https://github.com/gmskazi/japanese-text-to-speech/actions/workflows/ci.yml/badge.svg)](https://github.com/gmskazi/japanese-text-to-speech/actions/workflows/ci.yml)
+[![CI](https://github.com/gmskazi/text-to-speech/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/gmskazi/text-to-speech/actions/workflows/ci.yml?query=branch%3Amain)
 ![Python](https://img.shields.io/badge/python-3.12%2B-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.116%2B-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
@@ -192,7 +192,7 @@ curl -s http://localhost:8000/health
 Expected response:
 
 ```json
-{"status":"ok"}
+{ "status": "ok" }
 ```
 
 ## Natural Mode and Dialogue Rules
