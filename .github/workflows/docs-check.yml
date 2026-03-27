@@ -1,0 +1,30 @@
+name: Docs Check
+
+on:
+  push:
+    paths:
+      - "docs/**"
+      - "README.md"
+      - ".github/workflows/docs-check.yml"
+  pull_request:
+    paths:
+      - "docs/**"
+      - "README.md"
+      - ".github/workflows/docs-check.yml"
+
+jobs:
+  markdown-lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Lint Markdown files
+        uses: DavidAnson/markdownlint-cli2-action@v19
+        with:
+          globs: |
+            docs/**/*.md
+            README.md
