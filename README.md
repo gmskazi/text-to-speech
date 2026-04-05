@@ -8,19 +8,26 @@
 
 ![App Screenshot](images/ttsapp.webp)
 
-This project started as a practical tool to make clean audio snippets for Japanese teaching material my wife uses in class. It grew into a small FastAPI app with both a browser UI and API endpoints, so you can quickly turn text or short dialogues into MP3 files.
+This project started as a practical tool to make clean audio snippets for
+Japanese teaching material my wife uses in class.
+
+It grew into a small FastAPI app with both a browser UI and API endpoints, so
+you can quickly turn text or short dialogues into MP3 files.
 
 ## Important Scope
 
 - This app is currently for **internal/personal use only**.
-- It is reliable for local classroom-content workflows, but it is not hardened as a public SaaS service.
-- For production use, plan to replace `edge-tts` with a managed TTS backend and add auth, rate limits, durable storage, and observability.
+- It is reliable for local classroom-content workflows, but it is not hardened
+  as a public SaaS service.
+- For production use, plan to replace `edge-tts` with a managed TTS backend,
+  and add auth, rate limits, durable storage, and observability.
 
 ## What It Does
 
 - Generate single-speaker MP3 from plain text
 - Generate multi-speaker dialogue MP3 (A/B/C/D)
-- Use language-specific voice lists (Japanese, English, Spanish, French, German, Korean, Chinese)
+- Use language-specific voice lists (Japanese, English, Spanish, French,
+  German, Korean, Chinese)
 - Optionally normalize text in "natural mode"
 - Support sync downloads and async job-based generation
 
@@ -68,7 +75,8 @@ This project started as a practical tool to make clean audio snippets for Japane
 
 - Docker + Docker Compose
 - [mise](https://mise.jdx.dev/) (used to install Python and run project tasks)
-- `ffmpeg` is required only for non-Docker local runs (already included in the Docker image)
+- `ffmpeg` is required only for non-Docker local runs (already included in
+  the Docker image)
 
 ## Getting Started
 
@@ -216,9 +224,11 @@ curl -L "http://localhost:8000/jobs/<job_id>/download" --output result.mp3
 ## How It Works
 
 - **Single mode:** text -> `edge-tts` -> MP3
-- **Dialogue mode:** parse lines by speaker -> synthesize each line -> merge with `ffmpeg` concat
+- **Dialogue mode:** parse lines by speaker -> synthesize each line -> merge
+  with `ffmpeg` concat
 - **Natural mode:** light punctuation/spacing cleanup before TTS
-- **Fallback behavior:** if TTS returns "no audio" in natural mode, app retries with original text
+- **Fallback behavior:** if TTS returns "no audio" in natural mode, app
+  retries with original text
 
 Dialogue parsing rules:
 
@@ -229,15 +239,14 @@ Dialogue parsing rules:
 
 ## Development Commands
 
-| Command               | What it does                                                         |
-| --------------------- | -------------------------------------------------------------------- |
-| `mise run run`        | Start app (`uvicorn --reload`)                                       |
-| `mise run check`      | Compile, lint, type-check, tests, pip-audit, docker build smoke test |
-| `mise run check-docs` | Markdown lint for docs + README                                      |
-| `make` or `make all`  | Run `check` and `check-docs`                                         |
-| `pytest -q`           | Run tests                                                            |
-| `ruff check .`        | Run linter                                                           |
-| `mypy app tests`      | Run static type checks                                               |
+- `mise run run`: start app (`uvicorn --reload`)
+- `mise run check`: run compile, lint, type-check, tests, dependency audit,
+  and Docker build smoke test
+- `mise run check-docs`: lint docs and `README.md`
+- `make` or `make all`: run `check` and `check-docs`
+- `pytest -q`: run tests
+- `ruff check .`: run linter
+- `mypy app tests`: run static type checks
 
 ## Deployment
 
@@ -267,7 +276,8 @@ make deploy-local
 - App is container-friendly (`Dockerfile` + `docker-compose.yml`)
 - Exposes port `8000`
 - Requires `ffmpeg` in runtime image (already installed in Dockerfile)
-- For public deployments, add auth/rate limiting and persistent storage for generated files/jobs
+- For public deployments, add auth/rate limiting and persistent storage for
+  generated files/jobs
 
 ### Production TTS provider options (recommended instead of `edge-tts`)
 
@@ -287,7 +297,9 @@ make deploy-local
   - Good developer UX and easy API integration for modern AI stacks.
   - Good option if you are already building around OpenAI APIs.
 
-Implementation note: the clean swap point is `app/services/tts_service.py` (`_save_with_voice_fallback`, `generate_single_speaker`, and `generate_dialogue_parts`).
+Implementation note: the clean swap point is `app/services/tts_service.py`
+(`_save_with_voice_fallback`, `generate_single_speaker`, and
+`generate_dialogue_parts`).
 
 ## Troubleshooting
 
@@ -297,15 +309,19 @@ Install `ffmpeg` locally or run via Docker image that already includes it.
 
 ### `No audio was received`
 
-Try simpler text with letters/numbers (not punctuation only), or switch voice/language. In natural mode, the app already retries once with original text.
+Try simpler text with letters/numbers (not punctuation only), or switch
+voice/language. In natural mode, the app already retries once with original
+text.
 
 ### Job download says result not ready
 
-The async endpoint is eventually consistent. Poll `/jobs/{job_id}` until status is `done`, then download.
+The async endpoint is eventually consistent. Poll `/jobs/{job_id}` until
+status is `done`, then download.
 
 ### Jobs disappear after restart
 
-Expected currently: async jobs are stored in memory (`app/services/job_store.py`) and are not persistent.
+Expected currently: async jobs are stored in memory
+(`app/services/job_store.py`) and are not persistent.
 
 ## Current Limitations
 
