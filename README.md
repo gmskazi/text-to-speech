@@ -185,10 +185,12 @@ Notes:
 ## Using the Web App
 
 1. Open `http://localhost:8000/`
-2. Choose **Speaker Count** (`1` to `4`)
-3. Set output filename (the app enforces `.mp3` and sanitizes paths)
-4. Fill either single-speaker text or dialogue lines
-5. Click **Generate MP3**
+2. Use the cinematic dark workspace to configure **Speaker Count** (`1` to `4`)
+3. Set the output filename (the app enforces `.mp3` and sanitizes paths)
+4. Use the main editor canvas for either narration text or multi-speaker dialogue
+5. Tune language, voice, and speed in the narration or speaker mixer
+6. In dialogue mode, add speaker sections and drag them to reorder playback
+7. Click **Generate MP3**
 
 Dialogue example:
 
@@ -197,7 +199,9 @@ A: こんにちは。
 B: はい、どうしましたか？
 ```
 
-Tip: unlabeled lines continue the previous speaker.
+Tip: dialogue sections in the web UI are serialized into the existing `A:` / `B:`
+prompt format before submission. Unlabeled lines still continue the previous
+speaker in API usage.
 
 ## API Quick Reference
 
