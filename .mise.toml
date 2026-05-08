@@ -7,7 +7,7 @@ run = "pip install -e ."
 
 [tasks.install-dev]
 description = "Install development dependencies"
-run = "pip install -e .[dev] && pip install pip-audit"
+run = "pip install --upgrade 'pip>=26.1' && pip install -e .[dev] && pip install pip-audit"
 
 [tasks.run]
 description = "Run the FastAPI app"
@@ -17,7 +17,7 @@ run = "uvicorn app.main:app --reload"
 [tasks.check]
 description = "Run CI checks locally (revisit CVE-2026-4539 ignore when fixed)"
 depends = ["install-dev"]
-run = "python -m compileall app tests && ruff check . && mypy app tests && pytest -q && pip-audit --ignore-vuln CVE-2026-4539 && docker build -t text-to-speech-ci ."
+run = "python -m compileall app tests && ruff check . && mypy app tests && pytest -q && pip-audit --ignore-vuln CVE-2026-4539 && (docker info >/dev/null 2>&1 && docker build -t text-to-speech-ci . || printf 'Docker daemon unavailable; skipping local image build.\n')"
 
 [tasks.check-docs]
 description = "Run docs lint checks locally"
@@ -30,3 +30,24 @@ run = "bash scripts/build_local_image.sh"
 [tasks.deploy-local]
 description = "Build and deploy locally with health check and rollback"
 run = "bash scripts/deploy_local.sh"
+
+[tasks.graphify-install]
+description = "Install Graphify CLI + Claude Code skill"
+depends = ["install-dev"]
+run = "pip install graphifyy && graphify install"
+
+[tasks.graphify]
+description = "Install Graphify hooks for OpenCode in this repo"
+run = "graphify opencode install"
+
+[tasks.graphify-update]
+description = "Update existing graph.json from code changes"
+run = "graphify update ."
+
+[tasks.graphify-query]
+description = "Query existing graph.json"
+run = "graphify query \"what connects tts_service to API routes?\""
+
+[tasks.graphify-hook-install]
+description = "Install post-commit graphify hook"
+run = "graphify hook install"

@@ -211,3 +211,6 @@ __marimo__/
 
 # opencode skills
 .opencode/
+
+# graphify output
+graphify-out/

@@ -318,6 +318,101 @@
       padding: 10px;
     }
 
+    .dialogue-builder {
+      display: grid;
+      gap: 10px;
+    }
+
+    .dialogue-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .dialogue-actions,
+    .section-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .dialogue-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .dialogue-section {
+      border: 1px solid #2f4f71;
+      background: linear-gradient(180deg, rgba(13, 27, 47, 0.9), rgba(9, 18, 31, 0.92));
+      border-radius: 12px;
+      padding: 10px;
+      transition: border-color 140ms ease, transform 140ms ease, opacity 140ms ease;
+    }
+
+    .dialogue-section.dragging {
+      opacity: 0.55;
+      transform: scale(0.995);
+    }
+
+    .dialogue-section.drag-over {
+      border-color: var(--control-border-focus);
+      box-shadow: inset 0 0 0 1px rgba(85, 216, 222, 0.35);
+    }
+
+    .section-header {
+      display: grid;
+      grid-template-columns: auto minmax(120px, 180px) minmax(0, 1fr);
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 10px;
+    }
+
+    .drag-handle {
+      align-self: center;
+      border: 1px solid #355474;
+      border-radius: 9px;
+      background: #0e1a2c;
+      color: var(--text-muted);
+      cursor: grab;
+      font-weight: 800;
+      line-height: 1;
+      padding: 10px 9px;
+      user-select: none;
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .mini-btn {
+      border: 1px solid var(--control-border);
+      border-radius: 8px;
+      background: #0e1a2c;
+      color: var(--text-body);
+      cursor: pointer;
+      font-weight: 700;
+      padding: 8px 10px;
+      transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
+    }
+
+    .mini-btn:hover {
+      border-color: var(--control-border-hover);
+      background: var(--input-bg-hover);
+      color: var(--text-strong);
+    }
+
+    .mini-btn.danger:hover {
+      border-color: var(--error-border);
+      color: var(--error-text);
+    }
+
+    .section-text {
+      min-height: 96px;
+    }
+
     .btn {
       margin-top: 14px;
       border: 0;
@@ -390,7 +485,8 @@
       }
 
       .row,
-      .triple-grid {
+      .triple-grid,
+      .section-header {
         grid-template-columns: 1fr;
       }
     }
@@ -463,6 +559,237 @@
       }
     }
 
+    function activeSpeakers() {
+      const count = parseInt(document.getElementById("speaker_count").value, 10);
+      return ["A", "B", "C", "D"].slice(0, count);
+    }
+
+    function createSpeakerSelect(selectedSpeaker) {
+      const select = document.createElement("select");
+      select.className = "section-speaker";
+      select.setAttribute("aria-label", "Section speaker");
+
+      activeSpeakers().forEach((speaker) => {
+        const option = document.createElement("option");
+        option.value = speaker;
+        option.textContent = `Speaker ${speaker}`;
+        if (speaker === selectedSpeaker) {
+          option.selected = true;
+        }
+        select.appendChild(option);
+      });
+
+      if (!activeSpeakers().includes(select.value)) {
+        select.value = activeSpeakers()[0] || "A";
+      }
+
+      return select;
+    }
+
+    function createDialogueSection(speaker = "A", text = "") {
+      const section = document.createElement("div");
+      section.className = "dialogue-section";
+
+      const header = document.createElement("div");
+      header.className = "section-header";
+
+      const dragHandle = document.createElement("button");
+      dragHandle.className = "drag-handle";
+      dragHandle.type = "button";
+      dragHandle.draggable = true;
+      dragHandle.textContent = "::";
+      dragHandle.title = "Drag to reorder";
+      dragHandle.setAttribute("aria-label", "Drag section to reorder");
+
+      const speakerWrap = document.createElement("div");
+      const speakerLabel = document.createElement("label");
+      speakerLabel.textContent = "Speaker";
+      const speakerSelect = createSpeakerSelect(speaker);
+      speakerWrap.append(speakerLabel, speakerSelect);
+
+      const actions = document.createElement("div");
+      actions.className = "section-actions";
+
+      const moveUp = document.createElement("button");
+      moveUp.className = "mini-btn";
+      moveUp.type = "button";
+      moveUp.textContent = "Move Up";
+      moveUp.addEventListener("click", () => {
+        const previous = section.previousElementSibling;
+        if (previous) {
+          section.parentElement.insertBefore(section, previous);
+        }
+      });
+
+      const moveDown = document.createElement("button");
+      moveDown.className = "mini-btn";
+      moveDown.type = "button";
+      moveDown.textContent = "Move Down";
+      moveDown.addEventListener("click", () => {
+        const next = section.nextElementSibling;
+        if (next) {
+          section.parentElement.insertBefore(next, section);
+        }
+      });
+
+      const duplicate = document.createElement("button");
+      duplicate.className = "mini-btn";
+      duplicate.type = "button";
+      duplicate.textContent = "Duplicate";
+      duplicate.addEventListener("click", () => {
+        const copy = createDialogueSection(speakerSelect.value, textArea.value);
+        section.parentElement.insertBefore(copy, section.nextElementSibling);
+      });
+
+      const remove = document.createElement("button");
+      remove.className = "mini-btn danger";
+      remove.type = "button";
+      remove.textContent = "Remove";
+      remove.addEventListener("click", () => {
+        const list = document.getElementById("dialogue_sections");
+        if (list.children.length <= 1) {
+          textArea.value = "";
+          speakerSelect.value = activeSpeakers()[0] || "A";
+          return;
+        }
+        section.remove();
+      });
+
+      actions.append(moveUp, moveDown, duplicate, remove);
+      header.append(dragHandle, speakerWrap, actions);
+
+      const textLabel = document.createElement("label");
+      textLabel.textContent = "Section Text";
+      const textArea = document.createElement("textarea");
+      textArea.className = "section-text";
+      textArea.placeholder = "Enter this speaker's line or paragraph";
+      textArea.value = text;
+
+      section.append(header, textLabel, textArea);
+      bindDragHandlers(section);
+      return section;
+    }
+
+    function bindDragHandlers(section) {
+      section.addEventListener("dragstart", (event) => {
+        section.classList.add("dragging");
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", "dialogue-section");
+      });
+
+      section.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        const dragging = document.querySelector(".dialogue-section.dragging");
+        if (!dragging || dragging === section) {
+          return;
+        }
+        section.classList.add("drag-over");
+      });
+
+      section.addEventListener("dragleave", () => {
+        section.classList.remove("drag-over");
+      });
+
+      section.addEventListener("drop", (event) => {
+        event.preventDefault();
+        section.classList.remove("drag-over");
+        const dragging = document.querySelector(".dialogue-section.dragging");
+        if (!dragging || dragging === section) {
+          return;
+        }
+
+        const list = document.getElementById("dialogue_sections");
+        const rect = section.getBoundingClientRect();
+        const insertAfter = event.clientY > rect.top + rect.height / 2;
+        list.insertBefore(dragging, insertAfter ? section.nextSibling : section);
+      });
+
+      section.addEventListener("dragend", () => {
+        section.classList.remove("dragging");
+        document.querySelectorAll(".dialogue-section.drag-over").forEach((el) => {
+          el.classList.remove("drag-over");
+        });
+      });
+    }
+
+    function parseDialogueTextIntoSections(rawText) {
+      const sections = [];
+      let currentSpeaker = "A";
+      rawText.split(/\r?\n/).forEach((rawLine) => {
+        const line = rawLine.trim();
+        if (!line) {
+          return;
+        }
+        const match = line.match(/^([A-Za-z])\s*[:：]\s*(.*)$/);
+        if (match && activeSpeakers().includes(match[1].toUpperCase())) {
+          currentSpeaker = match[1].toUpperCase();
+          sections.push({ speaker: currentSpeaker, text: match[2] });
+          return;
+        }
+        sections.push({ speaker: currentSpeaker, text: line });
+      });
+      return sections;
+    }
+
+    function initializeDialogueSections() {
+      const list = document.getElementById("dialogue_sections");
+      const hiddenText = document.getElementById("dialogue_text");
+      if (!list || !hiddenText) {
+        return;
+      }
+
+      list.innerHTML = "";
+      const parsed = parseDialogueTextIntoSections(hiddenText.value || "");
+      const starterSections = parsed.length > 0
+        ? parsed
+        : [
+            { speaker: "A", text: "" },
+            { speaker: activeSpeakers()[1] || "A", text: "" },
+          ];
+
+      starterSections.forEach(({ speaker, text }) => {
+        list.appendChild(createDialogueSection(speaker, text));
+      });
+    }
+
+    function refreshSectionSpeakerOptions() {
+      document.querySelectorAll(".dialogue-section").forEach((section) => {
+        const oldSelect = section.querySelector(".section-speaker");
+        const selected = activeSpeakers().includes(oldSelect.value)
+          ? oldSelect.value
+          : activeSpeakers()[0] || "A";
+        oldSelect.replaceWith(createSpeakerSelect(selected));
+      });
+    }
+
+    function addDialogueSection() {
+      const list = document.getElementById("dialogue_sections");
+      const lastSection = list.lastElementChild;
+      const lastSpeaker = lastSection
+        ? lastSection.querySelector(".section-speaker").value
+        : activeSpeakers()[0] || "A";
+      list.appendChild(createDialogueSection(lastSpeaker, ""));
+    }
+
+    function serializeDialogueSections() {
+      const lines = [];
+      document.querySelectorAll(".dialogue-section").forEach((section) => {
+        const speaker = section.querySelector(".section-speaker").value;
+        const text = section.querySelector(".section-text").value.trim();
+        if (text) {
+          lines.push(`${speaker}: ${text}`);
+        }
+      });
+      return lines.join("\n");
+    }
+
+    function syncDialogueSectionsToText() {
+      const hiddenText = document.getElementById("dialogue_text");
+      const serialized = serializeDialogueSections();
+      hiddenText.value = serialized;
+      return serialized;
+    }
+
     function syncLanguageAcrossModes(languageCode) {
       const singleLanguage = document.getElementById("single_language");
       const dialogueLanguage = document.getElementById("dialogue_language");
@@ -496,6 +823,7 @@
         const idx = speaker.charCodeAt(0) - "A".charCodeAt(0) + 1;
         el.style.display = idx <= count ? "block" : "none";
       });
+      refreshSectionSpeakerOptions();
 
       syncLanguageAcrossModes(activeLanguage);
     }
@@ -552,6 +880,13 @@
       setLoading(true);
 
       const form = event.currentTarget;
+      const speakerCount = parseInt(document.getElementById("speaker_count").value, 10);
+      if (speakerCount > 1 && !syncDialogueSectionsToText()) {
+        setLoading(false);
+        showClientError("Please add at least one non-empty dialogue section.");
+        return;
+      }
+
       const formData = new FormData(form);
       const fallbackName = formData.get("output_name") || "tts_output.mp3";
 
@@ -613,7 +948,9 @@
 
     window.addEventListener("DOMContentLoaded", () => {
       syncLanguageAcrossModes(document.getElementById("single_language").value);
+      initializeDialogueSections();
       toggleMode();
+      document.getElementById("add_dialogue_section").addEventListener("click", addDialogueSection);
       const generateForm = document.querySelector('form[action="/generate"]');
       if (generateForm) {
         generateForm.addEventListener("submit", submitGenerateForm);
@@ -744,11 +1081,22 @@
                     <p class="hint">Balances rhythm and transition pacing between speakers.</p>
                   </div>
                   <div class="section">
-                    <label for="dialogue_text">Dialogue Text</label>
-                    <textarea id="dialogue_text" name="dialogue_text" placeholder="A: すみません。&#10;B: はい。"></textarea>
+                    <div class="dialogue-builder" aria-labelledby="dialogue-builder-title">
+                      <div class="dialogue-toolbar">
+                        <div>
+                          <h4 id="dialogue-builder-title" class="panel-title">Dialogue Sections</h4>
+                          <p class="hint">Build one line or paragraph per card, then drag cards to change playback order.</p>
+                        </div>
+                        <div class="dialogue-actions">
+                          <button id="add_dialogue_section" class="mini-btn" type="button">Add Section</button>
+                        </div>
+                      </div>
+                      <div id="dialogue_sections" class="dialogue-list"></div>
+                    </div>
+                    <textarea id="dialogue_text" name="dialogue_text" hidden placeholder="A: すみません。&#10;B: はい。"></textarea>
                     <p class="hint">
-                      Start lines with A:, B:, C:, or D:. Unlabeled lines continue with
-                      the previous speaker (or default to A for the first line).
+                      Sections are submitted as A:, B:, C:, or D: lines for compatibility
+                      with the existing dialogue parser.
                     </p>
                   </div>
                 </div>

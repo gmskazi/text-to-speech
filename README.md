@@ -75,6 +75,7 @@ you can quickly turn text or short dialogues into MP3 files.
 
 - Docker + Docker Compose
 - [mise](https://mise.jdx.dev/) (used to install Python and run project tasks)
+- Claude Code or OpenCode (for Graphify skill workflow)
 - `ffmpeg` is required only for non-Docker local runs (already included in
   the Docker image)
 
@@ -91,6 +92,10 @@ docker compose version
 ```
 
 Expected result: all three commands return a version string (and no errors).
+
+If Docker is installed but the daemon is not running, `mise run check` still
+runs the Python, lint, type, test, and dependency-audit checks and skips the
+final local image build with a notice.
 
 ### Option A: Docker Compose + mise (recommended)
 
@@ -129,6 +134,53 @@ cd text-to-speech
 mise install
 mise run run
 ```
+
+## Knowledge Graph (Graphify)
+
+This repository supports Graphify setup through `mise` only (no project
+dependency added to `pyproject.toml`). This works for Claude Code and OpenCode
+environments where you want graph-based repo navigation.
+
+Install Graphify CLI + skill:
+
+```bash
+mise run graphify-install
+```
+
+Install OpenCode integration for this repository:
+
+```bash
+mise run graphify
+```
+
+Then run graph build inside OpenCode chat:
+
+```text
+/graphify .
+```
+
+Incrementally update graph after edits:
+
+```bash
+mise run graphify-update
+```
+
+Run a sample query:
+
+```bash
+mise run graphify-query
+```
+
+Optional: install post-commit hook to auto-refresh graph:
+
+```bash
+mise run graphify-hook-install
+```
+
+Notes:
+
+- PyPI package is currently `graphifyy`, but command remains `graphify`.
+- Output is written to `graphify-out/` (ignored by git).
 
 ## Using the Web App
 
@@ -243,7 +295,13 @@ Dialogue parsing rules:
 - `mise run check`: run compile, lint, type-check, tests, dependency audit,
   and Docker build smoke test
 - `mise run check-docs`: lint docs and `README.md`
+- `mise run graphify-install`: install Graphify tooling for Claude Code/OpenCode
+- `mise run graphify`: install Graphify OpenCode repo integration
+- `mise run graphify-update`: update graph from changed files only
+- `mise run graphify-query`: run a sample graph query
+- `mise run graphify-hook-install`: install git post-commit Graphify hook
 - `make` or `make all`: run `check` and `check-docs`
+- `make graphify`: install Graphify OpenCode repo integration via mise task
 - `pytest -q`: run tests
 - `ruff check .`: run linter
 - `mypy app tests`: run static type checks

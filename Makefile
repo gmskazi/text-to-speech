@@ -1,4 +1,4 @@
-.PHONY: all check check-docs build-local-image deploy-local
+.PHONY: all check check-docs build-local-image deploy-local graphify
 
 all: check check-docs
 
@@ -13,3 +13,6 @@ build-local-image:
 
 deploy-local:
 	mise run deploy-local
+
+graphify:
+	mise run graphify
