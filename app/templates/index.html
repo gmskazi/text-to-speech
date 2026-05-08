@@ -17,10 +17,10 @@
       --surface-card: #161e27;
       --surface-raised: #1a2330;
       --surface-strong: #1e2a3a;
-      --ink: #9eb2c9;
-      --body: #6b8299;
-      --muted: #4a6078;
-      --muted-soft: #3a506b;
+      --ink: #c8d6e5;
+      --body: #94a8be;
+      --muted: #6b8299;
+      --muted-soft: #4a6078;
       --hairline: #1e2a3a;
       --hairline-soft: #161e27;
       --hairline-strong: #2a3a50;
@@ -263,7 +263,7 @@
     .editor-stage-title {
       margin: 0;
       color: var(--ink);
-      font-size: clamp(1.4rem, 2.4vw, 2rem);
+      font-size: clamp(1.6rem, 3.2vw, 2.8rem);
       font-weight: 700;
       letter-spacing: 0.08em;
       line-height: 1.05;
@@ -557,14 +557,16 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 34px;
+      min-width: 88px;
       height: 34px;
+      padding: 0 12px;
       border-radius: 999px;
       font-weight: 800;
-      font-size: 0.85rem;
-      color: var(--ink);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      color: var(--canvas);
       background: var(--speaker-a);
-      border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+      border: 1px solid color-mix(in srgb, var(--canvas) 30%, transparent);
     }
 
     .speaker-chip[data-speaker="B"] {
@@ -577,6 +579,14 @@
 
     .speaker-chip[data-speaker="D"] {
       background: var(--speaker-d);
+    }
+
+    .voice-name {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-left: 6px;
+      letter-spacing: 0.02em;
     }
 
     .speaker-settings[data-speaker="A"],
@@ -727,6 +737,20 @@
       box-shadow: none;
     }
 
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--canvas);
+      box-shadow: 0 0 18px 2px rgba(78, 205, 196, 0.25);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-active);
+      border-color: var(--primary-active);
+      color: var(--canvas);
+      box-shadow: 0 0 28px 4px rgba(78, 205, 196, 0.35);
+    }
+
     .howto {
       margin-top: 0;
       border: 0;
@@ -857,6 +881,25 @@
       return ["A", "B", "C", "D"].slice(0, count);
     }
 
+    function getVoiceName(speaker) {
+      const settings = document.querySelector(`.speaker-settings[data-speaker="${speaker}"]`);
+      if (!settings) return "";
+      const select = settings.querySelector("select");
+      if (!select) return "";
+      const selected = select.options[select.selectedIndex];
+      return selected ? selected.textContent : "";
+    }
+
+    function updateAllDialogueVoiceNames() {
+      document.querySelectorAll(".dialogue-section").forEach((section) => {
+        const speaker = section.dataset.speaker;
+        const voiceNameEl = section.querySelector(".voice-name");
+        if (voiceNameEl) {
+          voiceNameEl.textContent = getVoiceName(speaker);
+        }
+      });
+    }
+
     function createSpeakerSelect(selectedSpeaker) {
       const select = document.createElement("select");
       select.className = "section-speaker";
@@ -896,21 +939,23 @@
       dragHandle.setAttribute("aria-label", "Drag section to reorder");
 
       const speakerWrap = document.createElement("div");
-      const speakerLabel = document.createElement("label");
-      speakerLabel.textContent = "Speaker";
       const speakerChip = document.createElement("span");
       speakerChip.className = "speaker-chip";
       speakerChip.dataset.speaker = speaker;
       speakerChip.textContent = speaker;
+      const voiceNameEl = document.createElement("span");
+      voiceNameEl.className = "voice-name";
+      voiceNameEl.textContent = getVoiceName(speaker);
       const speakerSelect = createSpeakerSelect(speaker);
       speakerSelect.addEventListener("change", () => {
         section.dataset.speaker = speakerSelect.value;
         speakerChip.dataset.speaker = speakerSelect.value;
         speakerChip.textContent = speakerSelect.value;
+        voiceNameEl.textContent = getVoiceName(speakerSelect.value);
       });
       const speakerRow = document.createElement("div");
       speakerRow.className = "speaker-label-row";
-      speakerRow.append(speakerLabel, speakerChip);
+      speakerRow.append(speakerChip, voiceNameEl);
       speakerWrap.append(speakerRow, speakerSelect);
 
       const actions = document.createElement("div");
@@ -1062,6 +1107,7 @@
       document.querySelectorAll(".dialogue-section").forEach((section) => {
         const oldSelect = section.querySelector(".section-speaker");
         const speakerChip = section.querySelector(".speaker-chip");
+        const voiceNameEl = section.querySelector(".voice-name");
         const selected = activeSpeakers().includes(oldSelect.value)
           ? oldSelect.value
           : activeSpeakers()[0] || "A";
@@ -1070,10 +1116,12 @@
           section.dataset.speaker = nextSelect.value;
           speakerChip.dataset.speaker = nextSelect.value;
           speakerChip.textContent = nextSelect.value;
+          if (voiceNameEl) voiceNameEl.textContent = getVoiceName(nextSelect.value);
         });
         section.dataset.speaker = selected;
         speakerChip.dataset.speaker = selected;
         speakerChip.textContent = selected;
+        if (voiceNameEl) voiceNameEl.textContent = getVoiceName(selected);
         oldSelect.replaceWith(nextSelect);
       });
     }
@@ -1267,6 +1315,9 @@
       initializeDialogueSections();
       toggleMode();
       document.getElementById("add_dialogue_section").addEventListener("click", addDialogueSection);
+      document.querySelectorAll(".speaker-settings select").forEach((select) => {
+        select.addEventListener("change", updateAllDialogueVoiceNames);
+      });
       const generateForm = document.querySelector('form[action="/generate"]');
       if (generateForm) {
         generateForm.addEventListener("submit", submitGenerateForm);
@@ -1327,7 +1378,7 @@
               </div>
 
               <div class="rail-block">
-                <button id="generate_button" class="btn" type="submit">Generate MP3</button>
+                <button id="generate_button" class="btn btn-primary" type="submit">Generate MP3</button>
                 <p class="rail-copy">
                   Single-speaker mode is optimized for narration. Multi-speaker
                   mode preserves section order and speaker assignment.
@@ -1357,10 +1408,7 @@
                     format before submit.
                   </p>
                 </div>
-                <div class="topbar-meta">
-                  <div class="meta-chip">Large Workspace</div>
-                  <div class="meta-chip">Drag to Reorder</div>
-                </div>
+
               </div>
               <div class="mode-wrapper">
                 <div id="single_mode" class="mode-card section">
