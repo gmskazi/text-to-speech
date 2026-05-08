@@ -14,6 +14,57 @@ Japanese teaching material my wife uses in class.
 It grew into a small FastAPI app with both a browser UI and API endpoints, so
 you can quickly turn text or short dialogues into MP3 files.
 
+## What It Does & Features
+
+- **Single-speaker narration** — turn plain text into a single MP3 with your
+  choice of language, voice, and speed
+- **Multi-speaker dialogue** — assign up to four speakers (A/B/C/D), each with
+  their own voice and rate, then merge into one MP3
+- **Per-speaker controls** — independent voice and speed-rate settings for every
+  speaker in the mixer
+- **Dialogue builder** — add, duplicate, and remove dialogue sections directly
+  in the browser
+- **Reorder playback** — drag sections by the handle or use Move Up / Move Down
+  buttons to change the sequence
+- **Visual speaker chips** — each section shows a color-coded chip with the
+  speaker letter and the currently selected voice name
+- **Language-specific voices** — Japanese, English, Spanish, French, German,
+  Korean, and Chinese voice lists
+- **Natural mode** — optional light punctuation and spacing cleanup before TTS
+- **Sync & async generation** — download immediately or queue a background job
+
+## Using the Web App
+
+First, start the app. See **Option A** (Docker Compose) or **Option B** (local
+Python) in [Getting Started](#getting-started) below.
+
+1. Open `http://localhost:8000/`
+2. Choose **Speaker Count** (`1` to `4`) to switch between narration and
+   dialogue mode
+3. Set the output filename (the app enforces `.mp3` and sanitizes paths)
+4. In **Single Speaker mode**, pick language, voice, and speed, then enter your
+   text in the editor
+5. In **Multi Speaker Dialogue mode**:
+   - Use the **Speaker Mixer** to set a voice and speed for each active speaker
+   - Click **Add Section** to create a new dialogue card
+   - Each card shows a color-coded **Speaker Chip** (A/B/C/D) and the selected
+     **voice name** next to it
+   - Use the dropdown in each card to assign which speaker reads that section
+   - Reorder cards by dragging the handle or clicking **Move Up** / **Move Down**
+   - **Duplicate** a card to repeat a line, or **Remove** it to delete
+6. Click **Generate MP3** to render and download
+
+Dialogue example:
+
+```text
+A: こんにちは。
+B: はい、どうしましたか？
+```
+
+Tip: dialogue sections in the web UI are serialized into the existing `A:` / `B:`
+prompt format before submission. Unlabeled lines still continue the previous
+speaker in API usage.
+
 ## Important Scope
 
 - This app is currently for **internal/personal use only**.
@@ -21,15 +72,6 @@ you can quickly turn text or short dialogues into MP3 files.
   as a public SaaS service.
 - For production use, plan to replace `edge-tts` with a managed TTS backend,
   and add auth, rate limits, durable storage, and observability.
-
-## What It Does
-
-- Generate single-speaker MP3 from plain text
-- Generate multi-speaker dialogue MP3 (A/B/C/D)
-- Use language-specific voice lists (Japanese, English, Spanish, French,
-  German, Korean, Chinese)
-- Optionally normalize text in "natural mode"
-- Support sync downloads and async job-based generation
 
 ## Tech Stack
 
@@ -181,27 +223,6 @@ Notes:
 
 - PyPI package is currently `graphifyy`, but command remains `graphify`.
 - Output is written to `graphify-out/` (ignored by git).
-
-## Using the Web App
-
-1. Open `http://localhost:8000/`
-2. Use the cinematic dark workspace to configure **Speaker Count** (`1` to `4`)
-3. Set the output filename (the app enforces `.mp3` and sanitizes paths)
-4. Use the main editor canvas for either narration text or multi-speaker dialogue
-5. Tune language, voice, and speed in the narration or speaker mixer
-6. In dialogue mode, add speaker sections and drag them to reorder playback
-7. Click **Generate MP3**
-
-Dialogue example:
-
-```text
-A: こんにちは。
-B: はい、どうしましたか？
-```
-
-Tip: dialogue sections in the web UI are serialized into the existing `A:` / `B:`
-prompt format before submission. Unlabeled lines still continue the previous
-speaker in API usage.
 
 ## API Quick Reference
 
@@ -362,28 +383,6 @@ make deploy-local
 Implementation note: the clean swap point is `app/services/tts_service.py`
 (`_save_with_voice_fallback`, `generate_single_speaker`, and
 `generate_dialogue_parts`).
-
-## Troubleshooting
-
-### `ffmpeg is not installed or not in PATH`
-
-Install `ffmpeg` locally or run via Docker image that already includes it.
-
-### `No audio was received`
-
-Try simpler text with letters/numbers (not punctuation only), or switch
-voice/language. In natural mode, the app already retries once with original
-text.
-
-### Job download says result not ready
-
-The async endpoint is eventually consistent. Poll `/jobs/{job_id}` until
-status is `done`, then download.
-
-### Jobs disappear after restart
-
-Expected currently: async jobs are stored in memory
-(`app/services/job_store.py`) and are not persistent.
 
 ## Current Limitations
 
